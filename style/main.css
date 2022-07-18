@@ -206,7 +206,7 @@ h4 {
     left: 0;
 }
 
-canvas {
+.game {
     display: table;
     margin-right: auto;
     margin-left: auto;
@@ -219,6 +219,14 @@ canvas {
     border-radius: 5px;
 }
 
+.text { 
+    background-color: transparent; 
+    position: absolute;
+    left: 100px;
+    top: 10px;
+    z-index: 10;
+  }
+
 .btn {
     background-color: rgb(254, 213, 48);
     display: inline-block;
@@ -230,9 +238,9 @@ canvas {
     padding: 5px 30px 5px 30px;
     color: white;
     font-family: "Titan One";
-    text-shadow: rgba(0, 0, 0, 0.25) 0px 2px 2px;
+    text-shadow: rgba(0, 0, 0, 0.25) 0px 2px px;
     box-shadow: rgba(0, 0, 0, 0.25) 2px 2px 2px;
-    -webkit-text-stroke: 0.2px black;
+    -webkit-text-stroke: 0.5px black;
     font-size: 20px;
     border-radius: 10px;
     border-color: rgb(0, 0, 0);

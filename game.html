@@ -17,15 +17,19 @@
         <div class="container">
             <image class="object top-position" src="assets/game/game-avatar.png"></image>
             <image class="object bot-position" src="assets/game/game-avatar-2.png"></image>
-            <canvas width="1000" height="700"></canvas>
+            <!-- WebGL Canvas-->
+            <canvas class="game" width="1000" height="700"></canvas>
+            <!-- 2D Text Context Canvas -->
+            <canvas class="text" width="1000" height="700"></canvas>
         </div>
     </div>
-    <button id = "audio" class="btn btn-audio"><span id="inner-audio-icon" class="material-symbols-outlined">
+    <!-- Commands Buttons -->
+    <button id="audio" class="btn btn-audio"><span id="inner-audio-icon" class="material-symbols-outlined">
             volume_up
         </span> <span class="btn-text"></span></button>
-    <button id = "shadow" class="btn btn-shadow"><span id="inner-shadow-icon" class="material-symbols-outlined">
-        ev_shadow
-    </span></button>
+    <button id="shadow" class="btn btn-shadow"><span id="inner-shadow-icon" class="material-symbols-outlined">
+            ev_shadow
+        </span></button>
     <button id="preview" class="btn btn-preview">
         <span id="inner-shadow-icon" class="material-symbols-outlined">
             visibility
@@ -37,9 +41,10 @@
         </span>
     </button>
     <span class="outler-text">FPS:</span><span id="fps-value" class="outler-text">0</span>
-
-        <script src="src/interface.js"></script>
-        <script src="src/game.js"></script>
+    <script type="text/javascript" src="src/resources/webgl-utils.js"></script>
+    <script type="text/javascript" src="src/resources/m4.js"></script>ƒ
+    <script src="src/interface.js"></script>
+    <script src="src/game.js"></script>
 </body>
 
 </html>
