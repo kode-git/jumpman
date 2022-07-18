@@ -18,9 +18,9 @@
             <image class="object top-position" src="assets/game/game-avatar.png"></image>
             <image class="object bot-position" src="assets/game/game-avatar-2.png"></image>
             <!-- WebGL Canvas-->
-            <canvas class="game" width="1000" height="700"></canvas>
+            <canvas id="game" class="game" width="1000" height="700"></canvas>
             <!-- 2D Text Context Canvas -->
-            <canvas class="text" width="1000" height="700"></canvas>
+            <canvas id="text" class="text" width="1000" height="700"></canvas>
         </div>
     </div>
     <!-- Commands Buttons -->
@@ -41,10 +41,68 @@
         </span>
     </button>
     <span class="outler-text">FPS:</span><span id="fps-value" class="outler-text">0</span>
+
+
+    <script id="vertex-shader" type="not-javascript">
+        attribute  vec4 vPosition;
+        attribute  vec3 vNormal;
+        varying vec4 fColor;
+        
+        uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+        uniform mat4 modelMatrix;
+        uniform mat4 viewMatrix;
+        uniform mat4 projectionMatrix;
+        uniform vec4 lightPosition;
+        uniform float shininess;
+        void main()
+        {  
+            vec3 pos = -(modelMatrix * vPosition).xyz;
+            
+            //fixed light postion
+            
+            vec3 light = lightPosition.xyz;
+            vec3 L = normalize( light - pos );
+         
+            vec3 E = normalize( -pos );
+            vec3 H = normalize( L + E );
+            
+            vec4 NN = vec4(vNormal,0);
+        
+            // Transform vertex normal into eye coordinates
+            vec3 N = normalize( (modelMatrix*NN).xyz);
+        
+            // Compute terms in the illumination equation
+            vec4 ambient = ambientProduct;
+        
+            float Kd = max( dot(L, N), 0.0 );
+            vec4  diffuse = Kd*diffuseProduct;
+        
+            float Ks = pow( max(dot(N, H), 0.0), shininess );
+            vec4  specular = Ks * specularProduct;
+            
+            if( dot(L, N) < 0.0 ) {
+               specular = vec4(0.0, 0.0, 0.0, 1.0);
+            } 
+        
+            gl_Position = projectionMatrix * viewMatrix * modelMatrix * vPosition;
+            fColor = ambient + diffuse + specular;
+            fColor.a = 1.0;
+        }
+    </script>
+
+    <script id="fragment-shader" type="not-javascript">
+        precision mediump float;
+        varying vec4 fColor;
+        void main()
+        {
+            gl_FragColor = fColor;
+        }
+    </script>
     <script type="text/javascript" src="src/resources/webgl-utils.js"></script>
     <script type="text/javascript" src="src/resources/m4.js"></script>ƒ
     <script src="src/interface.js"></script>
     <script src="src/game.js"></script>
+    <script src="src/fps.js"></script>
 </body>
 
 </html>

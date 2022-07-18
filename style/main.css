@@ -217,6 +217,7 @@ h4 {
     -moz-box-shadow: 0 0 5px rgb(0, 0, 0);
     border: solid 0px transparent;
     border-radius: 5px;
+    z-index: 1000000;
 }
 
 .text { 
@@ -224,7 +225,6 @@ h4 {
     position: absolute;
     left: 100px;
     top: 10px;
-    z-index: 10;
   }
 
 .btn {
