@@ -1,8 +1,54 @@
 @import url('https://fonts.googleapis.com/css2?family=Titan+One&display=swap');
 
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url(https://example.com/MaterialIcons-Regular.eot);
+    /* For IE6-8 */
+    src: local('Material Icons'),
+        local('MaterialIcons-Regular'),
+        url(https://example.com/MaterialIcons-Regular.woff2) format('woff2'),
+        url(https://example.com/MaterialIcons-Regular.woff) format('woff'),
+        url(https://example.com/MaterialIcons-Regular.ttf) format('truetype');
+}
+
+.material-icons {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    /* Preferred icon size */
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+
+    /* Support for all WebKit browsers. */
+    -webkit-font-smoothing: antialiased;
+    /* Support for Safari and Chrome. */
+    text-rendering: optimizeLegibility;
+
+    /* Support for Firefox. */
+    -moz-osx-font-smoothing: grayscale;
+
+    /* Support for IE. */
+    font-feature-settings: 'liga';
+}
+
+.material-symbols-outlined {
+    margin-top: 5px;
+}
+
+
 * {
     box-sizing: border-box;
 }
+
+
 
 body,
 html {
@@ -64,7 +110,7 @@ h4 {
     background-color: white;
     padding: 2px;
     overflow-y: scroll;
-    height: 100%;   
+    height: 100%;
 }
 
 .inner-content:required {
@@ -72,23 +118,27 @@ h4 {
     -webkit-box-shadow: 0 0 5px rgb(0, 0, 0);
     -moz-box-shadow: 0 0 5px rgb(0, 0, 0);
     border: solid 0px transparent;
-    
+
 }
 
-.inner-content h1,h2,h3,h4 {
+.inner-content h1,
+h2,
+h3,
+h4 {
     color: rgb(255, 204, 2);
     -webkit-text-stroke: 0.2px black;
     text-align: center
 }
 
-.inner-content p,.inner-content h3{
+.inner-content p,
+.inner-content h3 {
     text-align: left;
-    margin:  30px 250px 30px 250px;
+    margin: 30px 250px 30px 250px;
     text-shadow: rgba(0, 0, 0, 0.25) 0px 4px 4px;
 }
 
 
-.bg {
+.bg-home {
     background-image: url("../assets/homepage/pattern-background.jpg");
     height: 100%;
     width: 100%;
@@ -103,6 +153,23 @@ h4 {
     background-size: cover;
     overflow-y: scroll;
 }
+
+.bg-game {
+    background-image: url("../assets/game/pattern-background.webp");
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    display: absolute;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    overflow-y: scroll;
+}
+
 
 
 .container {
@@ -131,7 +198,7 @@ h4 {
     width: 300px;
 }
 
-.top-position{
+.top-position {
     animation: MoveUpDownTop 4s linear infinite;
     top: 0;
     bottom: 1;
@@ -139,19 +206,86 @@ h4 {
     left: 0;
 }
 
-@keyframes MoveUpDownTop{
-    0%, 100% {
+canvas {
+    display: table;
+    margin-right: auto;
+    margin-left: auto;
+    margin-top: 100px;
+    background-color: white;
+    box-shadow: 0 0 5px rgb(0, 0, 0);
+    -webkit-box-shadow: 0 0 5px rgb(0, 0, 0);
+    -moz-box-shadow: 0 0 5px rgb(0, 0, 0);
+    border: solid 0px transparent;
+    border-radius: 5px;
+}
+
+.btn {
+    background-color: rgb(254, 213, 48);
+    display: inline-block;
+    position: relative;
+    margin-right: auto;
+    margin-left: auto;
+    margin-top: 40px;
+    z-index: 50000;
+    padding: 5px 30px 5px 30px;
+    color: white;
+    font-family: "Titan One";
+    text-shadow: rgba(0, 0, 0, 0.25) 0px 2px 2px;
+    box-shadow: rgba(0, 0, 0, 0.25) 2px 2px 2px;
+    -webkit-text-stroke: 0.2px black;
+    font-size: 20px;
+    border-radius: 10px;
+    border-color: rgb(0, 0, 0);
+}
+
+.btn-text {
+    margin-bottom: 30px;
+}
+
+.btn-shadow {
+    margin: 40px 5px 40px 5px;
+
+}
+
+.btn:hover {
+    -webkit-text-stroke: 0.4px black;
+    text-shadow: rgba(0, 0, 0, 0.25) 0px 2px 2px;
+}
+
+.btn:active {
+    background-color: rgb(255, 204, 2)
+}
+
+.outler-text{
+    z-index: 50000;
+    font-family: "Titan One";
+    color: white;
+    display: inline-block;
+    position: relative;
+    margin-left: 10px;
+    
+}
+
+
+@keyframes MoveUpDownTop {
+
+    0%,
+    100% {
         top: 50px;
     }
+
     50% {
         top: 100px;
     }
 }
 
 @keyframes MoveUpDown {
-    0%, 100% {
+
+    0%,
+    100% {
         bottom: 50px;
     }
+
     50% {
         bottom: 100px;
     }
@@ -159,7 +293,7 @@ h4 {
 
 
 
-@media(max-width: 1475px){
+@media(max-width: 1475px) {
     .inner-content {
         display: block;
         position: relative;
@@ -171,9 +305,16 @@ h4 {
         z-index: 5000;
         margin-bottom: 0;
         width: 300px;
+        display: none;
     }
 
+    .top-position {
+        display: none;
+    }
+}
 
-
-
+@media(min-width: 1000px){
+    .btn-audio{
+        margin-left: 350px;
+    }
 }
