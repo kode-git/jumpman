@@ -15,8 +15,8 @@
 <body>
     <div class="bg-game">
         <div class="container">
-            <image class="object top-position" src="assets/game/game-avatar.png"></image>
-            <image class="object bot-position" src="assets/game/game-avatar-2.png"></image>
+            <image class="object top-position" src="src/assets/game/game-avatar.png"></image>
+            <image class="object bot-position" src="src/assets/game/game-avatar-2.png"></image>
             <!-- WebGL Canvas-->
             <canvas id="game" class="game" width="1000" height="700"></canvas>
             <!-- 2D Text Context Canvas -->
@@ -43,63 +43,80 @@
     <span class="outler-text">FPS:</span><span id="fps-value" class="outler-text">0</span>
 
 
-    <script id="vertex-shader" type="not-javascript">
-        attribute  vec4 vPosition;
-        attribute  vec3 vNormal;
-        varying vec4 fColor;
+    <!-- Environment Map -->
+    <script id="envmap-vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 a_position;
+        attribute vec3 a_normal;
         
-        uniform vec4 ambientProduct, diffuseProduct, specularProduct;
-        uniform mat4 modelMatrix;
-        uniform mat4 viewMatrix;
-        uniform mat4 projectionMatrix;
-        uniform vec4 lightPosition;
-        uniform float shininess;
-        void main()
-        {  
-            vec3 pos = -(modelMatrix * vPosition).xyz;
-            
-            //fixed light postion
-            
-            vec3 light = lightPosition.xyz;
-            vec3 L = normalize( light - pos );
-         
-            vec3 E = normalize( -pos );
-            vec3 H = normalize( L + E );
-            
-            vec4 NN = vec4(vNormal,0);
+        uniform mat4 u_projection;
+        uniform mat4 u_view;
+        uniform mat4 u_world;
         
-            // Transform vertex normal into eye coordinates
-            vec3 N = normalize( (modelMatrix*NN).xyz);
+        varying vec3 v_worldPosition;
+        varying vec3 v_worldNormal;
         
-            // Compute terms in the illumination equation
-            vec4 ambient = ambientProduct;
+        void main() {
+          // Multiply the position by the matrix.
+          gl_Position = u_projection * u_view * u_world * a_position;
         
-            float Kd = max( dot(L, N), 0.0 );
-            vec4  diffuse = Kd*diffuseProduct;
+          // send the view position to the fragment shader
+          v_worldPosition = (u_world * a_position).xyz;
         
-            float Ks = pow( max(dot(N, H), 0.0), shininess );
-            vec4  specular = Ks * specularProduct;
-            
-            if( dot(L, N) < 0.0 ) {
-               specular = vec4(0.0, 0.0, 0.0, 1.0);
-            } 
-        
-            gl_Position = projectionMatrix * viewMatrix * modelMatrix * vPosition;
-            fColor = ambient + diffuse + specular;
-            fColor.a = 1.0;
+          // orient the normals and pass to the fragment shader
+          v_worldNormal = mat3(u_world) * a_normal;
         }
-    </script>
+        </script>
+    <!-- fragment shader -->
+    <script id="envmap-fragment-shader" type="x-shader/x-fragment">
+        precision highp float;
+        
+        // Passed in from the vertex shader.
+        varying vec3 v_worldPosition;
+        varying vec3 v_worldNormal;
+        
+        // The texture.
+        uniform samplerCube u_texture;
+        
+        // The position of the camera
+        uniform vec3 u_worldCameraPosition;
+        
+        void main() {
+          vec3 worldNormal = normalize(v_worldNormal);
+          vec3 eyeToSurfaceDir = normalize(v_worldPosition - u_worldCameraPosition);
+          vec3 direction = reflect(eyeToSurfaceDir,worldNormal);
+        
+          gl_FragColor = textureCube(u_texture, direction);
+        }
+        </script>
 
-    <script id="fragment-shader" type="not-javascript">
-        precision mediump float;
-        varying vec4 fColor;
-        void main()
-        {
-            gl_FragColor = fColor;
+    <!-- Skybox -->
+    <script id="skybox-vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 a_position;
+        varying vec4 v_position;
+        void main() {
+          v_position = a_position;
+          gl_Position = vec4(a_position.xy, 1, 1);
         }
-    </script>
+        </script>
+    <script id="skybox-fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+        
+        uniform samplerCube u_skybox;
+        uniform mat4 u_viewDirectionProjectionInverse;
+        
+        varying vec4 v_position;
+        void main() {
+          vec4 t = u_viewDirectionProjectionInverse * v_position;
+          gl_FragColor = textureCube(u_skybox, normalize(t.xyz / t.w));
+        }
+        </script>
+    <script type="text/javascript" src="src/resources/mesh_utils.js"></script>
+    <script type="text/javascript" src="src/resources/glm_utils.js"></script>
     <script type="text/javascript" src="src/resources/webgl-utils.js"></script>
-    <script type="text/javascript" src="src/resources/m4.js"></script>ƒ
+    <script type="text/javascript" src="src/resources/m4.js"></script>
+    <script type="text/javascript" src="src/resources/jquery-3.6.0.js"></script>
+    <script type="text/javascript" src="src/resources/load_mesh.js"></script>
+    <script src="https://webglfundamentals.org/webgl/resources/primitives.js"></script>
     <script src="src/interface.js"></script>
     <script src="src/game.js"></script>
     <script src="src/fps.js"></script>

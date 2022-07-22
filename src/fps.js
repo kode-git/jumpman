@@ -1,3 +1,7 @@
+/**
+ * FPS Management in real time 
+ */
+
 const average = document.getElementById('fps-value')
 console.log(average)
 const frameTimes = [];
@@ -7,7 +11,7 @@ const maxFrames = 20;
 let   totalFps = 0;
 let then = 0;
 let interval = 0
-async function render(now) {
+async function updateFps(now) {
   now *= 0.001;                          // convert to seconds
   const deltaTime = now - then;          // compute time since last frame
   then = now;                            // remember time for next frame
@@ -31,6 +35,6 @@ async function render(now) {
     average.textContent = averageFps.toFixed(1);
     interval = 0;
   }
-  setTimeout(requestAnimationFrame(render), 2000);
+  setTimeout(requestAnimationFrame(updateFps), 2000);
 }
-setTimeout(requestAnimationFrame(render), 2000);
+setTimeout(requestAnimationFrame(updateFps), 2000);

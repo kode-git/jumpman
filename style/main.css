@@ -139,7 +139,7 @@ h4 {
 
 
 .bg-home {
-    background-image: url("../assets/homepage/pattern-background.jpg");
+    background-image: url("../src/assets/homepage/pattern-background.jpg");
     height: 100%;
     width: 100%;
     margin: 0;
@@ -155,7 +155,7 @@ h4 {
 }
 
 .bg-game {
-    background-image: url("../assets/game/pattern-background.webp");
+    background-image: url("../src/assets/game/pattern-background.webp");
     height: 100%;
     width: 100%;
     margin: 0;
@@ -211,7 +211,6 @@ h4 {
     margin-right: auto;
     margin-left: auto;
     margin-top: 100px;
-    background-color: white;
     box-shadow: 0 0 5px rgb(0, 0, 0);
     -webkit-box-shadow: 0 0 5px rgb(0, 0, 0);
     -moz-box-shadow: 0 0 5px rgb(0, 0, 0);
