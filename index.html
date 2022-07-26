@@ -4,8 +4,7 @@
 <head>
     <meta http-equiv=”Pragma” content=”no-cache”>
     <meta http-equiv=”Cache-Control” content=”no-cache”>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="./style/main.css" rel="stylesheet" type="text/css">
 </head>
 
@@ -19,33 +18,38 @@
                 <h1>Jump Man</h1>
                 <div class="outler-content">
                     <div class="inner-content">
-                        <h3>Introduzione</h3>
+                        <h3>1. Introduzione</h3>
                         <p>
                             Il gioco ha come base logica quello di Fall Guy che, nel 2021, ha riscosso un gran
                             successo anche su piattaforme di streaming come Twitch o Youtube. Il progetto
                             consisterà nella sperimentazione delle tecniche di computer graphics applicate in un
                             contesto WebGL, andando a definire un modello poligonale tridimensionale che
                             rappresenta il "Jump Man" in grado di saltare e navigare con i comandi da tastiera
-                            (o con le dita per poter adattarlo ai dispositivi mobile). Il progetto è disponibile al seguente <a href="game.html">link</a>.
+                            (o con le dita per poter adattarlo ai dispositivi mobile). Il progetto è disponibile al
+                            seguente <a href="game.html">link</a>.
                         </p>
-                        <h3>Progettazione</h3>
+                        <h3>2. Progettazione</h3>
                         <p>
-                            La progettazione fa riferimento all'implementazione di una scena 3D composta da un Jump Man
-                            e un piano di gioco in cui poter raccogliere monete. Nell'implementazione si avranno
-                            funzionalità legate alle collisioni con le monete e un sistema di punteggio. Le monete sono
-                            distribuite in maniera fissa durante la scena, questo perchè si intende sviluppare un
-                            tutorial del gioco in cui poter gestire l'ambiente tramite il controllo sul personaggio.
-                            Bisogna gestire le monete secondo una trasformazione in relazione alla rotazione per
-                            garantire un animazione
-                            legata al singolo oggetto. Inoltre, saranno presenti poligoni semplici tridimensionali
-                            (cubi) per rendere l'ambiente più dinamico.
-                            Vi sarà una gestione fisica del movimento del Jump Man andando ad inserire un movimento in
-                            grado di determinare un animazione del
-                            personaggio durante il movimento e il salto in relazione alla sua composizione poligonale.
-                            Infine, si gestiranno texture, luci, ombre con la possibilità di rimozioni tramite un
-                            interfaccia di controllo. Il progetto interesserà l'utilizzo di Blender 3.0 per garantire un
-                            ottimizzazione dei risultati per la composizione poligonale e l'applicazione di texture personalizzate.
+                            L'obiettivo prefissato è inerente allo sviluppo di un tutorial di Jumpman in cui si avrà una
+                            fase iniziale in cui vi sarà la
+                            scelta del personaggio che andrà a differerire basadosi su texture applicate ad wavefront
+                            object esportati da Blender. Il modello di base e il materiale saranno sempre gli stessi,
+                            vi saranno cambiamenti solamente nella scelta della texture in cui sarà collegata al
+                            wavefront object che si vuole selezionare una volta visualizzato nella scena.
+
+                            Successivamente, al click su play si passerà al tutorial del gioco. La scena presentata è
+                            stata progettata, come il modello del Jumpman, da 0 secondo le tecniche di base usufruibili
+                            da Blender (gestione poligonale delle componenti, materiali, diffusione della luce, etc.).
+
+                            Il progetto si può sintetizzare in differenti fasi:
+                            <br><br>
+                            <b>2.1 Progettazione dei modelli su Blender</b> <br><br>
+                            <b>2.2 Progettazione della scena su Blender</b><br><br>
+                            <b>2.3 Generazione dell'ambiente WebGL</b><br><br>
+                            <b>2.4 Gestione movimenti e camera</b><br><br>
+                            <b>2.5 Applicazione di effetti avanzati</b><br><br>
                         </p>
+
 
                         <h3>Disclaimer</h3>
                         <p>
