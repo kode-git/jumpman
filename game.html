@@ -13,10 +13,14 @@
 </head>
 
 <body>
+    <!-- Utils classes for the DOM and WebGL Management -->
+    <script src="utils.js" type="text/script"></script>
+
+    <!-- Main Background -->
     <div class="bg-game">
         <div class="container">
-            <image class="object top-position" src="src/assets/game/game-avatar.png"></image>
-            <image class="object bot-position" src="src/assets/game/game-avatar-2.png"></image>
+            <image class="object object-fixed top-position" src="src/assets/game/game-avatar.png"></image>
+            <image class="object object-fixed bot-position" src="src/assets/game/game-avatar-2.png"></image>
             <!-- WebGL Canvas-->
             <canvas id="game" class="game" width="1000" height="700"></canvas>
             <!-- 2D Text Context Canvas -->
@@ -30,74 +34,119 @@
     <button id="shadow" class="btn btn-shadow"><span id="inner-shadow-icon" class="material-symbols-outlined">
             ev_shadow
         </span></button>
-    <button id="preview" class="btn btn-preview">
-        <span id="inner-shadow-icon" class="material-symbols-outlined">
+    <button id="preview" onclick="utilityDOM.toggleAnimation()" class="btn btn-preview">
+        <span id="inner-visibility-icon" class="material-symbols-outlined">
             visibility
         </span>
     </button>
     <button id="info" class="btn btn-preview">
-        <span id="inner-shadow-icon" class="material-symbols-outlined">
+        <span id="inner-quest" class="material-symbols-outlined">
             question_mark
         </span>
     </button>
+
+    <!-- FPS System -->
     <span class="outler-text">FPS:</span><span id="fps-value" class="outler-text">0</span>
 
+    <!-- ============= Start Map =============  -->
+    <!-- Vertex Shader -->
 
-    <!-- Environment Map -->
-    <script id="envmap-vertex-shader" type="x-shader/x-vertex">
+    <script id="start-vs" type="x-shader/x-vertex">
         attribute vec4 a_position;
         attribute vec3 a_normal;
-        
+        attribute vec2 a_texcoord;
+        attribute vec4 a_color;
+      
         uniform mat4 u_projection;
         uniform mat4 u_view;
         uniform mat4 u_world;
-        
-        varying vec3 v_worldPosition;
-        varying vec3 v_worldNormal;
-        
+        uniform vec3 u_viewWorldPosition;
+      
+        varying vec3 v_normal;
+        varying vec3 v_surfaceToView;
+        varying vec2 v_texcoord;
+        varying vec4 v_color;
+      
         void main() {
-          // Multiply the position by the matrix.
-          gl_Position = u_projection * u_view * u_world * a_position;
-        
-          // send the view position to the fragment shader
-          v_worldPosition = (u_world * a_position).xyz;
-        
-          // orient the normals and pass to the fragment shader
-          v_worldNormal = mat3(u_world) * a_normal;
+          vec4 worldPosition = u_world * a_position;
+          gl_Position = u_projection * u_view * worldPosition;
+          v_surfaceToView = u_viewWorldPosition - worldPosition.xyz;
+          v_normal = mat3(u_world) * a_normal;
+          v_texcoord = a_texcoord;
+          v_color = a_color;
         }
-        </script>
-    <!-- fragment shader -->
-    <script id="envmap-fragment-shader" type="x-shader/x-fragment">
+    </script>
+
+    <!-- Fragment Shader -->
+    <script id="start-fs" type="x-shader/x-vertex">
         precision highp float;
-        
-        // Passed in from the vertex shader.
-        varying vec3 v_worldPosition;
-        varying vec3 v_worldNormal;
-        
-        // The texture.
-        uniform samplerCube u_texture;
-        
-        // The position of the camera
-        uniform vec3 u_worldCameraPosition;
-        
+
+        varying vec3 v_normal;
+        varying vec3 v_surfaceToView;
+        varying vec2 v_texcoord;
+        varying vec4 v_color;
+
+        uniform vec3 diffuse;
+        uniform sampler2D diffuseMap;
+        uniform vec3 ambient;
+        uniform vec3 emissive;
+        uniform vec3 specular;
+        uniform float shininess;
+        uniform float opacity;
+        uniform vec3 u_lightDirection;
+        uniform vec3 u_ambientLight;
+
+        void main () {
+            vec3 normal = normalize(v_normal);
+
+            vec3 surfaceToViewDirection = normalize(v_surfaceToView);
+            vec3 halfVector = normalize(u_lightDirection + surfaceToViewDirection);
+
+            float fakeLight = dot(u_lightDirection, normal) * .5 + .5;
+            float specularLight = clamp(dot(normal, halfVector), 0.0, 1.0);
+
+            vec4 diffuseMapColor = texture2D(diffuseMap, v_texcoord);
+            vec3 effectiveDiffuse = diffuse * diffuseMapColor.rgb * v_color.rgb;
+            float effectiveOpacity = opacity * diffuseMapColor.a * v_color.a;
+
+            gl_FragColor = vec4(
+                emissive +
+                ambient * u_ambientLight +
+                effectiveDiffuse * fakeLight +
+                specular * pow(specularLight, shininess),
+                effectiveOpacity);
+            }
+    </script>
+
+
+
+    <!-- Fragment Shader -->
+    <script id="start-fs" type="x-shader/x-fragment">
+        precision mediump float;
+
+        // passing from the vertex shader and output of rasterization
+        varying vec4 v_color;
+
         void main() {
-          vec3 worldNormal = normalize(v_worldNormal);
-          vec3 eyeToSurfaceDir = normalize(v_worldPosition - u_worldCameraPosition);
-          vec3 direction = reflect(eyeToSurfaceDir,worldNormal);
-        
-          gl_FragColor = textureCube(u_texture, direction);
+        gl_FragColor = v_color;
         }
         </script>
 
-    <!-- Skybox -->
+
+    <!-- ============== SkyBox ================ -->
+
+    <!-- Vertex Shader -->
     <script id="skybox-vertex-shader" type="x-shader/x-vertex">
         attribute vec4 a_position;
         varying vec4 v_position;
+        
         void main() {
           v_position = a_position;
-          gl_Position = vec4(a_position.xy, 1, 1);
+          gl_Position = vec4(a_position.xyz, 1);
         }
         </script>
+
+    <!-- Fragment Shader -->
     <script id="skybox-fragment-shader" type="x-shader/x-fragment">
         precision mediump float;
         
@@ -109,17 +158,27 @@
           vec4 t = u_viewDirectionProjectionInverse * v_position;
           gl_FragColor = textureCube(u_skybox, normalize(t.xyz / t.w));
         }
-        </script>
+    </script>
+
+    <!-- Local Resources -->
     <script type="text/javascript" src="src/resources/mesh_utils.js"></script>
     <script type="text/javascript" src="src/resources/glm_utils.js"></script>
-    <script type="text/javascript" src="src/resources/webgl-utils.js"></script>
-    <script type="text/javascript" src="src/resources/m4.js"></script>
     <script type="text/javascript" src="src/resources/jquery-3.6.0.js"></script>
     <script type="text/javascript" src="src/resources/load_mesh.js"></script>
-    <script src="https://webglfundamentals.org/webgl/resources/primitives.js"></script>
-    <script src="src/interface.js"></script>
-    <script src="src/game.js"></script>
-    <script src="src/fps.js"></script>
+    <script type="text/javascript" src="src/resources/dat.gui.js"></script>
+
+    <!-- Remote Resources -->
+    <script src="https://webglfundamentals.org/webgl/resources/webgl-utils.js"></script>
+    <script src="https://webglfundamentals.org/webgl/resources/m4.js"></script>
+
+    <!-- Internal Scripts -->
+    <script src="src/script/interface.js"></script>
+    <script src="src/script/mainUtils.js"></script>
+    <script src="src/script/meshUtils.js"></script>
+    <script src="src/script/start.js"></script>
+    <script src="src/script/fps.js"></script>
 </body>
 
 </html>
+
+-->
