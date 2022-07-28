@@ -5,18 +5,19 @@
 class UtilityDOM{
     
     hidden;
-    object;
+    objects;
     icon;
     
     constructor(){
         this.hidden = false
-        this.object = document.getElementsByClassName('object')
+        this.objects = document.getElementsByClassName('object')
         this.icon = document.getElementById("inner-visibility-icon");
     }
 
     toggleAnimation(){
 
         for (let object of this.objects) {
+            console.log(object)
             if (this.hidden) {
                 object.style.display = "none";
             }

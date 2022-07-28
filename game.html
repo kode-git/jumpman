@@ -118,46 +118,30 @@
             }
     </script>
 
-
-
-    <!-- Fragment Shader -->
-    <script id="start-fs" type="x-shader/x-fragment">
-        precision mediump float;
-
-        // passing from the vertex shader and output of rasterization
-        varying vec4 v_color;
-
-        void main() {
-        gl_FragColor = v_color;
-        }
-        </script>
-
-
     <!-- ============== SkyBox ================ -->
 
     <!-- Vertex Shader -->
-    <script id="skybox-vertex-shader" type="x-shader/x-vertex">
+    <script id="skybox-vs" type="x-shader/x-vertex">
         attribute vec4 a_position;
         varying vec4 v_position;
-        
         void main() {
           v_position = a_position;
-          gl_Position = vec4(a_position.xyz, 1);
+          gl_Position = vec4(a_position.xy, 1, 1);
         }
         </script>
 
     <!-- Fragment Shader -->
-    <script id="skybox-fragment-shader" type="x-shader/x-fragment">
+    <script id="skybox-fs" type="x-shader/x-fragment">
         precision mediump float;
-        
-        uniform samplerCube u_skybox;
-        uniform mat4 u_viewDirectionProjectionInverse;
-        
-        varying vec4 v_position;
-        void main() {
-          vec4 t = u_viewDirectionProjectionInverse * v_position;
-          gl_FragColor = textureCube(u_skybox, normalize(t.xyz / t.w));
-        }
+
+    uniform samplerCube u_skybox;
+    uniform mat4 u_viewDirectionProjectionInverse;
+
+    varying vec4 v_position;
+    void main() {
+        vec4 t = u_viewDirectionProjectionInverse * v_position;
+        gl_FragColor = textureCube(u_skybox, normalize(t.xyz / t.w));
+    }   
     </script>
 
     <!-- Local Resources -->
@@ -175,6 +159,7 @@
     <script src="src/script/interface.js"></script>
     <script src="src/script/mainUtils.js"></script>
     <script src="src/script/meshUtils.js"></script>
+    <script src="src/script/skybox.js"></script>
     <script src="src/script/start.js"></script>
     <script src="src/script/fps.js"></script>
 </body>
