@@ -34,7 +34,7 @@
     <button id="shadow" class="btn btn-shadow"><span id="inner-shadow-icon" class="material-symbols-outlined">
             ev_shadow
         </span></button>
-    <button id="preview" onclick="utilityDOM.toggleAnimation()" class="btn btn-preview">
+    <button id="preview" class="btn btn-preview">
         <span id="inner-visibility-icon" class="material-symbols-outlined">
             visibility
         </span>
@@ -50,6 +50,7 @@
 
     <!-- ============= Start Map =============  -->
     <!-- Vertex Shader -->
+
 
     <script id="start-vs" type="x-shader/x-vertex">
         attribute vec4 a_position;
@@ -146,9 +147,9 @@
 
     <!-- Local Resources -->
     <script type="text/javascript" src="src/resources/mesh_utils.js"></script>
+    <script type="text/javascript" src="src/resources/load_mesh.js"></script>
     <script type="text/javascript" src="src/resources/glm_utils.js"></script>
     <script type="text/javascript" src="src/resources/jquery-3.6.0.js"></script>
-    <script type="text/javascript" src="src/resources/load_mesh.js"></script>
     <script type="text/javascript" src="src/resources/dat.gui.js"></script>
 
     <!-- Remote Resources -->
@@ -156,12 +157,13 @@
     <script src="https://webglfundamentals.org/webgl/resources/m4.js"></script>
 
     <!-- Internal Scripts -->
-    <script src="src/script/interface.js"></script>
-    <script src="src/script/mainUtils.js"></script>
-    <script src="src/script/meshUtils.js"></script>
-    <script src="src/script/skybox.js"></script>
-    <script src="src/script/start.js"></script>
-    <script src="src/script/fps.js"></script>
+    <script src="src/script/utils/time.js"></script>
+    <script src="src/script/utils/math.js"></script>
+    <script src="src/script/interface/buttonsControllers.js"></script>
+    <script src="src/script/components/primitives.js"></script>
+    <script src="src/script/components/wavefront.js"></script>
+    <script src="src/script/components/skybox.js"></script>
+    <script src="src/script/scene/selectChar.js"></script>
 </body>
 
 </html>
