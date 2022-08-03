@@ -23,10 +23,22 @@ var ambient, diffuse, specular, emissive, shininess, opacity;
 
 // ========================================
 
-
+// Animation and Projections fields
 var fieldOfViewRadians = degToRad(80);
 var time, then = 0;
 
+// Jumpmans objects
+const references = [
+    'src/models/jumpman/purple_baseline.obj',
+    'src/models/jumpman/orange_baseline.obj',
+    'src/models/jumpman/start_baseline.obj',
+    'src/models/jumpman/turquoise_baseline.obj',
+    'src/models/jumpman/green_baseline.obj',
+];
+
+// index and oldIndex are in the buttonsControllers.js
+// var indexTexture = 0; // index of the wavefront object to load
+// var oldIndex; 
 
 /*
 ====================================
@@ -36,14 +48,14 @@ var time, then = 0;
 */
 
 /**
- * Draw the skybox using the GLSL program with the buffer, projection of the view direction and texture for the scene orientation
+ * Draw the skybox using its embdedded GLSL program with the buffer, projection of the view direction and texture for the scene orientation
  * @param {*} gl is the WebGL context
  * @param {*} skyboxProgramInfo is the GLSL program for the skybox 
  * @param {*} quadBufferInfo is the buffer with geometric data
  * @param {*} viewDirectionProjectionInverseMatrix  is the inverse of the multiply between projection matrix and view matrix
  * @param {*} texture is the texture of the skybox
  */
-function drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture){
+function drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture) {
     gl.depthFunc(gl.LEQUAL);
     gl.useProgram(skyboxProgramInfo.program);
     webglUtils.setBuffersAndAttributes(gl, skyboxProgramInfo, quadBufferInfo);
@@ -54,6 +66,45 @@ function drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjecti
     webglUtils.drawBufferInfo(gl, quadBufferInfo);
 }
 
+/**
+ * Draw the jumpman using its embedded GLSL program with the buffer, uniforms, parts, objectOffests and time for the rotation
+ * @param {*} gl is the WebGL context
+ * @param {*} startProgramInfo is the program for the Jumpman drawing
+ * @param {*} sharedUniforms container of the uniforms variables values 
+ * @param {*} parts is the parts of the object wavefront
+ * @param {*} objOffset is the object offset
+ * @param {*} time is the time animation strictly related to the rotation
+ */
+function drawJumpman(gl, startProgramInfo, sharedUniforms, parts, objOffset, time) {
+    gl.depthFunc(gl.LESS);  // use the default depth test
+    gl.useProgram(startProgramInfo.program);
+    webglUtils.setUniforms(startProgramInfo, sharedUniforms);
+
+    // =========== Compute the world matrix once since all parts =========
+    let u_world = m4.yRotation(time);
+    u_world = m4.translate(u_world, ...objOffset);
+    for (const { bufferInfo, material } of parts) {
+        webglUtils.setBuffersAndAttributes(gl, startProgramInfo, bufferInfo);
+        webglUtils.setUniforms(startProgramInfo, {
+            u_world,
+        }, material);
+        webglUtils.drawBufferInfo(gl, bufferInfo);
+    }
+}
+
+
+/**
+ * Select a different color for the jumpman
+ * @param {*} gl is the WebGL context
+ * @param {*} i is the index of the colored object wavefront
+ */
+async function selectColoredJumpman(gl, i){
+    i = Math.abs(i) % references.length;
+    var data = await loadObjParts(gl, references[i])
+    parts = data.p;
+    objOffset = data.offset;
+    range = data.r;
+}
 
 /*
 ====================================
@@ -84,10 +135,6 @@ async function runSelectCharScene() {
         gl, ["start-vs", "start-fs"]);
 
 
-    var data = await loadObjParts(gl, 'src/models/jumpman/start_baseline.obj')
-    parts = data.p;
-    objOffset = data.offset;
-    range = data.r;
 
     // =====================================
     //          SkyBox Program  
@@ -106,7 +153,14 @@ async function runSelectCharScene() {
     requestAnimationFrame(drawScene);
 
     // Draw the scene.
-    function drawScene(time) {
+    async function drawScene(time) {
+
+        // load object only if it changes
+        if(oldIndex != indexTexture){
+            await selectColoredJumpman(gl, indexTexture)
+            oldIndex = indexTexture;
+        }
+
         // convert to seconds
         time *= 0.001;
         // Subtract the previous time from the current time
@@ -155,14 +209,8 @@ async function runSelectCharScene() {
         var viewDirectionProjectionInverseMatrix =
             m4.inverse(viewDirectionProjectionMatrix);
 
-        // draw jumpman
-        gl.depthFunc(gl.LESS);  // use the default depth test
-        gl.useProgram(startProgramInfo.program);
 
-
-        // ======= Using the main shaders for the starting scene =========
-
-        // ========= Set Ligh direction, view and projection matrix and camera position ===========
+        // ========= Set Ligh direction, view and projection matrix and camera position for the Jumpman ===========
         const sharedUniforms = {
             u_lightDirection: m4.normalize([0.5, 1, 1]), // direction of the source light
             u_view: viewMatrix,
@@ -170,26 +218,10 @@ async function runSelectCharScene() {
             u_viewWorldPosition: cameraPosition,
         };
 
-        // ========= Set Uniforms for the Starting Program ===========
-        webglUtils.setUniforms(startProgramInfo, sharedUniforms);
+        // draw Jumpman  
+        drawJumpman(gl, startProgramInfo, sharedUniforms, parts, objOffset, time);
 
-        // =========== Compute the world matrix once since all parts =========
-        let u_world = m4.yRotation(time);
-        u_world = m4.translate(u_world, ...objOffset);
-
-        // ======== Setting buffer and uniforms for each part ==============
-        for (const { bufferInfo, material } of parts) {
-            // calls gl.bindBuffer, gl.enableVertexAttribArray, gl.vertexAttribPointer
-            webglUtils.setBuffersAndAttributes(gl, startProgramInfo, bufferInfo);
-            // calls gl.uniform
-            webglUtils.setUniforms(startProgramInfo, {
-                u_world,
-            }, material);
-            // calls gl.drawArrays or gl.drawElements
-            webglUtils.drawBufferInfo(gl, bufferInfo);
-        }
-
-        // draw the skybox
+        // draw Skybox
         drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);
 
         requestAnimationFrame(drawScene);

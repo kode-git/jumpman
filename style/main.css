@@ -286,6 +286,37 @@ h4 {
     position: center;
 }
 
+#arrow-back, #arrow-forward{
+    position: fixed;
+    display: absolute;
+    z-index: 5000000;
+    width: 50px;
+    height: 50px;
+    background-color: rgb(254, 213, 48);
+    color: black;
+    font-family: "Titan One";
+    text-shadow: rgba(0, 0, 0, 0.25) 0px 2px px;
+    box-shadow: rgba(0, 0, 0, 0.25) 2px 2px 2px;
+    -webkit-text-stroke: 0.5px black;
+    font-size: 20px;
+    border-radius: 10px;
+    border-color: rgb(0, 0, 0);
+}
+
+#arrow-forward {
+    top: 45%;
+    right: 30%;
+}
+
+#arrow-back {
+    top: 45%;
+    left: 30%;
+}
+
+canvas {
+    width: 1000px;
+    height: 700px;
+}
 
 
 @keyframes MoveUpDownTop {
@@ -337,5 +368,26 @@ h4 {
 @media(min-width: 1000px){
     .btn-audio{
         margin-left: 350px;
+    }
+    
+}
+
+@media(max-width: 1000px){
+    canvas {
+        width: 100%;
+        height: 100%;
+    }
+
+    #arrow-back, 
+    #arrow-forward {
+        top: 30%;
+    }
+
+    #arrow-back {
+        left: 20%;
+    }
+
+    #arrow-forward {
+        right: 20%;
     }
 }
