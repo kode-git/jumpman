@@ -89,6 +89,17 @@ function toggleStartButtons(){
     }
 }
 
+function loadingInterface(){
+    var contents = document.getElementsByClassName('full');
+    var loading = document.getElementById('loading');
+    loading.style.display = "none";
+    for(let i = 0; i < contents.length; i++){
+        contents[i].style.display = "block";
+    }
+
+
+}
+
 /**
  * Main function.
  */

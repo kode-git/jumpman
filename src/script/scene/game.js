@@ -156,10 +156,10 @@ function loadAndRun(){
         return;
     }
 
-    startInterface(); // Starting the interface with the loading phase
 
     // loading jumpmans 
     initResource(gl).then(()=>{
+        loadingInterface(); // Starting the interface with the loading phase
         runSelectCharScene();
     })
 }

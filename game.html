@@ -16,13 +16,21 @@
     <!-- Utils classes for the DOM and WebGL Management -->
     <script src="utils.js" type="text/script"></script>
 
+    <div id="loading" class="loading">
+
+        <video autoplay muted loop id="myVideo">
+            <source src="src/assets/loading/loading.mp4" type="video/mp4">
+            <img src="src/assets/loading/loading-image.jpg"/> <!-- in case of no video -->
+        </video>
+
+    </div>
     <!-- Main Background -->
-    <div class="bg-game">
+    <div id="full" class="full bg-game">
         <div class="container">
-            <image class="object object-fixed top-position" src="src/assets/game/game-avatar.png"></image>
-            <image class="object object-fixed bot-position" src="src/assets/game/game-avatar-2.png"></image>
+            <image class="object top-position" src="src/assets/game/game-avatar.png"></image>
+            <image class="object bot-position" src="src/assets/game/game-avatar-2.png"></image>
             <!-- WebGL Canvas-->
-            <button id="arrow-back" class="inner-button left" ><span  class="material-symbols-outlined">
+            <button id="arrow-back" class="inner-button left"><span class="material-symbols-outlined">
                     arrow_back
                 </span></button>
             <button id="arrow-forward" class="inner-button left"><span class="material-symbols-outlined">
@@ -34,26 +42,29 @@
             <button id="play-button" class="inner-button center"><span>PLAY</span></button>
         </div>
     </div>
-    <!-- Commands Buttons -->
-    <button id="audio" class="btn btn-audio"><span id="inner-audio-icon" class="material-symbols-outlined">
-            volume_up
-        </span> <span class="btn-text"></span></button>
-    <button id="shadow" class="btn btn-shadow"><span id="inner-shadow-icon" class="material-symbols-outlined">
-            ev_shadow
-        </span></button>
-    <button id="preview" class="btn btn-preview">
-        <span id="inner-visibility-icon" class="material-symbols-outlined">
-            visibility
-        </span>
-    </button>
-    <button id="info" class="btn btn-preview">
-        <span id="inner-quest" class="material-symbols-outlined">
-            question_mark
-        </span>
-    </button>
+    <div class="full">
+        <!-- Commands Buttons -->
+        <button id="audio" class="btn btn-audio"><span id="inner-audio-icon" class="material-symbols-outlined">
+                volume_up
+            </span> <span class="btn-text"></span></button>
+        <button id="shadow" class="btn btn-shadow"><span id="inner-shadow-icon" class="material-symbols-outlined">
+                ev_shadow
+            </span></button>
+        <button id="preview" class="btn btn-preview">
+            <span id="inner-visibility-icon" class="material-symbols-outlined">
+                visibility
+            </span>
+        </button>
+        <button id="info" class="btn btn-preview">
+            <span id="inner-quest" class="material-symbols-outlined">
+                question_mark
+            </span>
+        </button>
 
-    <!-- FPS System -->
-    <span class="outler-text">FPS:</span><span id="fps-value" class="outler-text">0</span>
+        <!-- FPS System -->
+        <span class="outler-text">FPS:</span><span id="fps-value" class="outler-text">0</span>
+    </div>
+
 
     <!-- ============= Start Map =============  -->
     <!-- Vertex Shader -->
@@ -166,7 +177,7 @@
     <!-- Internal Scripts -->
     <script src="src/script/utils/time.js"></script>
     <script src="src/script/utils/math.js"></script>
-    <script src="src/script/interface/buttonsControllers.js"></script>
+    <script src="src/script/interface/interfaceController.js"></script>
     <script src="src/script/components/primitives.js"></script>
     <script src="src/script/components/wavefront.js"></script>
     <script src="src/script/components/skybox.js"></script>

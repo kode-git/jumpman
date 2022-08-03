@@ -13,6 +13,25 @@
         url(https://example.com/MaterialIcons-Regular.ttf) format('truetype');
 }
 
+
+.loading{
+    margin-right: auto;
+    margin-left: auto;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    display: absolute;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 500000;
+}
+
+.full {
+    display: none;
+}
+
 .material-icons {
     font-family: 'Material Icons';
     font-weight: normal;
@@ -160,7 +179,7 @@ h4 {
     width: 100%;
     margin: 0;
     padding: 0;
-    display: absolute;
+    display: absolute; /* Switch to absolute in interfaceController.js onload */
     position: fixed;
     top: 0;
     left: 0;
@@ -335,6 +354,7 @@ canvas {
     width: 1000px;
     height: 700px;
 }
+
 
 
 @keyframes MoveUpDownTop {

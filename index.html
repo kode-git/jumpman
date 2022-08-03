@@ -60,8 +60,32 @@
                             senza cambiare i riferimenti posizionali dell'oggetto collegato al jumpman della scena
                             iniziale.<br><br>
 
-                            <b>2.2 Progettazione della scena su Blender</b><br><br>
+                            <b>2.2 Progettazione delle scene su Blender</b><br><br>
+
                             <b>2.3 Generazione dell'ambiente WebGL</b><br><br>
+                            L'ambiente WebGL è all'interno di un canvas di dimensione variabile, riadattabile con
+                            aggiornamento ad ogni frame. La frequenza dei frame è fornita da un valore FPS che esegue
+                            un monitoraggio continuo con aggiornamento ogni 50 frame (per evitare effetti di
+                            aggiornamenti velocizzati e non visibili all'occhio umano). La scena WebGL è composta da due
+                            fasi:<br><br>
+                            - <i>Fase di selezione del giocatore</i>, in cui poter cambiare la skin del jumpman
+                            (rappresentata da un cambio di materiale in un file .obj).<br>
+                            - <i>Fase di gioco</i>, in cui vi è il caricamento della scena principale con relativi
+                            movimenti, camera con movimenti tridimensionali non vincolata e possibilità di switching
+                            della visuale tramite il click su un bottone. <br><br>
+                            Per evitare che vi siano ritardi di caricamento, poichè i file .obj esportati da blender
+                            hanno un determinato peso, si è pensato di applicare una fase di caricamento durante il page
+                            loading. Questa scelta porterà ad un caricamento
+                            dei dati in manierà più lenta quando si andrà nella schermata di gioco ma, durante lo
+                            svolgimento e in fase di selezionamento del personaggio, non vi sono ritardi, andando a
+                            massimizzare l'esperienza di gioco. Entrambe le scene hanno uno skybox rappresentato da un
+                            cubo a massima profondità su ogni faccia,
+                            il caricamento della texture viene effettuata solamente 1 volta in fase di selezionamento
+                            del personaggio. Entrambe le scene hanno un movimento della camera con renderizzamento della
+                            prospettiva e del punto di vista ad ogni frame.
+                            La telecamera supporta sia il tocco (per dispositivi mobili, touchscreen) che la gestione
+                            tramite trackpad o mouse. La gestione degli eventi per il movimento e per la camera verranno
+                            approfonditi nel paragrafo successivo. <br><br>
                             <b>2.4 Gestione movimenti e camera</b><br><br>
                             <b>2.5 Applicazione di effetti avanzati</b><br><br>
                         </p>
