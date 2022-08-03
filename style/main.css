@@ -313,6 +313,24 @@ h4 {
     left: 30%;
 }
 
+#play-button{
+    position: fixed;
+    z-index: 5000000;
+    width: 140px !important;
+    height: 50px;
+    background-color: rgb(254, 213, 48);
+    font-family: "Titan One";
+    text-shadow: rgba(0, 0, 0, 0.25) 0px 2px px;
+    box-shadow: rgba(0, 0, 0, 0.25) 2px 2px 2px;
+    -webkit-text-stroke: 0.5px black;
+    font-size: 20px;
+    border-radius: 10px;
+    border-color: rgb(0, 0, 0);
+    color: white !important;
+    bottom: 10%;
+    left: 46%;
+}
+
 canvas {
     width: 1000px;
     height: 700px;
@@ -389,5 +407,9 @@ canvas {
 
     #arrow-forward {
         right: 20%;
+    }
+
+    #play-button{
+        left: 40%;
     }
 }

@@ -3,12 +3,13 @@
 /**
  * This script manages interface to leverage actions on user interface buttons.
  */
-var audio, preview, shadow, info, objects, hidden, iconPreview;
+var audio, preview, shadow, info, objects, hidden, iconPreview, play;
 
 // Skin Switching 
 var back, forward;
 var indexTexture = 0; // index of the wavefront object to load
 var oldIndex; 
+var gameStart = false; // check the status of the inner game 
 
 /**
  * Remove external objects from the interface.
@@ -56,6 +57,10 @@ function backSkin(){
 function forwardSkin(){
     indexTexture++;
 }
+
+function startGame(){
+    gameStart = true;
+}
 /**
  * Main function.
  */
@@ -63,11 +68,12 @@ function initButtonControllers(){
     audio = document.getElementById('audio');
     preview = document.getElementById('preview');
     shadow = document.getElementById('shadow');
-    info = document.getElementById('info')
+    info = document.getElementById('info');
     iconPreview = document.getElementById("inner-visibility-icon");
-    objects = document.getElementsByClassName('object')
-    back = document.getElementById('arrow-back')
-    forward = document.getElementById('arrow-forward')
+    objects = document.getElementsByClassName('object');
+    back = document.getElementById('arrow-back');
+    forward = document.getElementById('arrow-forward');
+    play = document.getElementById('play-button');
     hidden = false
     
     preview.onclick = initPreviewController;
@@ -76,6 +82,7 @@ function initButtonControllers(){
     info.onclick = linkInfo;
     back.onclick = backSkin;
     forward.onclick = forwardSkin;
+    play.onclick = startGame;
 
 }
 

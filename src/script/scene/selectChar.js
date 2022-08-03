@@ -106,6 +106,10 @@ async function selectColoredJumpman(gl, i){
     range = data.r;
 }
 
+function triggerGameStart(){
+    // 
+}
+
 /*
 ====================================
         Main Function of the 
@@ -125,6 +129,7 @@ async function runSelectCharScene() {
     if (!gl) {
         return;
     }
+
 
     // setup GLSL programs and lookup locations
 
@@ -160,6 +165,9 @@ async function runSelectCharScene() {
             await selectColoredJumpman(gl, indexTexture)
             oldIndex = indexTexture;
         }
+
+        // If the game start 
+        triggerGameStart();
 
         // convert to seconds
         time *= 0.001;
