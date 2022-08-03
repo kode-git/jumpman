@@ -3,13 +3,20 @@
 /**
  * This script manages interface to leverage actions on user interface buttons.
  */
+
+
 var audio, preview, shadow, info, objects, hidden, iconPreview, play;
 
 // Skin Switching 
 var back, forward;
 var indexTexture = 0; // index of the wavefront object to load
 var oldIndex; 
-var gameStart = false; // check the status of the inner game 
+
+
+// Logic button status trigger 
+var gameStart; // check the status of the inner game 
+
+
 
 /**
  * Remove external objects from the interface.
@@ -32,6 +39,7 @@ function initPreviewController(){
  * Redirect to the index.html
  */
 function linkInfo(){
+    startGame = false;
     window.location.replace('./index.html');
 }
 
@@ -42,7 +50,6 @@ function shadowToggle(){
     // 
 }
 
-
 /**
  * Toggle of audio file in background play.
  */
@@ -50,17 +57,38 @@ function audioToggle(){
     //
 }
 
+/**
+ * Select the previous skin
+ */
 function backSkin(){
     indexTexture--;
 }
 
+/**
+ * Select the next skin
+ */
 function forwardSkin(){
     indexTexture++;
 }
 
+/**
+ * Start game status
+ */
 function startGame(){
     gameStart = true;
 }
+
+/**
+ * Remove the Start Buttons
+ */
+function toggleStartButtons(){
+    if(gameStart){
+        play.style.display = "none";
+        back.style.display = "none";
+        forward.style.display = "none";
+    }
+}
+
 /**
  * Main function.
  */
@@ -74,7 +102,8 @@ function initButtonControllers(){
     back = document.getElementById('arrow-back');
     forward = document.getElementById('arrow-forward');
     play = document.getElementById('play-button');
-    hidden = false
+    hidden = false;
+    gameStart = false;
     
     preview.onclick = initPreviewController;
     audio.onclick = audioToggle;
@@ -84,6 +113,10 @@ function initButtonControllers(){
     forward.onclick = forwardSkin;
     play.onclick = startGame;
 
+}
+
+function startInterface(){
+    
 }
 
 /**
