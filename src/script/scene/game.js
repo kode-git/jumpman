@@ -113,6 +113,15 @@ function drawJumpman(gl, envProgramInfo, sharedUniforms, parts, objOffset, time)
 }
 
 
+/**
+ * Draw the platform 
+ * @param {*} gl is the WebGL context
+ * @param {*} envProgramInfo is the GLSL program
+ * @param {*} sharedUniforms is uniforms values
+ * @param {*} parts is parts of the object
+ * @param {*} objOffset is the offset of the object
+ * @param {*} time is the rotation time
+ */
 function drawPlatform(gl, envProgramInfo, sharedUniforms, parts, objOffset, time) {
     gl.depthFunc(gl.LESS);  // use the default depth test
     gl.useProgram(envProgramInfo.program);
