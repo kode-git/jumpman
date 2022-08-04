@@ -18,6 +18,7 @@ var numVertices;
 var parts;
 var range;
 var objOffset;
+var sharedUniforms;
 
 // ======== Skybox Object ===========
 
@@ -51,7 +52,9 @@ const references = [
     'src/models/jumpman/green_baseline.obj',
 ];
 
+const platformUrl = 'src/models/platform/plartform.obj'
 var jumpmans = [];
+var platform;
 
 // index and oldIndex are in the buttonsControllers.js
 // var indexTexture = 0; // index of the wavefront object to load
@@ -84,9 +87,9 @@ function drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjecti
 }
 
 /**
- * Draw the jumpman using its embedded GLSL program with the buffer, uniforms, parts, objectOffests and time for the rotation
+ * Draw the jumpman, platforms, money or other object waveform using its embedded GLSL program with the buffer, uniforms, parts, objectOffests and time for the rotation
  * @param {*} gl is the WebGL context
- * @param {*} envProgramInfo is the program for the Jumpman drawing
+ * @param {*} envProgramInfo is the program for the environment object
  * @param {*} sharedUniforms container of the uniforms variables values 
  * @param {*} parts is the parts of the object wavefront
  * @param {*} objOffset is the object offset
@@ -109,11 +112,31 @@ function drawJumpman(gl, envProgramInfo, sharedUniforms, parts, objOffset, time)
     }
 }
 
+
+function drawPlatform(gl, envProgramInfo, sharedUniforms, parts, objOffset, time) {
+    gl.depthFunc(gl.LESS);  // use the default depth test
+    gl.useProgram(envProgramInfo.program);
+    webglUtils.setUniforms(envProgramInfo, sharedUniforms);
+
+    // =========== Compute the world matrix once since all parts =========
+    let u_world = m4.yRotation(time);
+    u_world = m4.translate(u_world, ...objOffset);
+    for (const { bufferInfo, material } of parts) {
+        webglUtils.setBuffersAndAttributes(gl, envProgramInfo, bufferInfo);
+        webglUtils.setUniforms(envProgramInfo, {
+            u_world,
+        }, material);
+        webglUtils.drawBufferInfo(gl, bufferInfo);
+    }
+}
+
+
 /**
  * Pre-loading of resources for faster game
  * @param {*} gl 
  */
 async function initResource(gl) {
+    // Loading of jumpmans models
     for (let i = 0; i < references.length; i++) {
         let data = await loadObjParts(gl, references[i]);
         jumpmans.push({
@@ -122,6 +145,17 @@ async function initResource(gl) {
             r: data.r,
         })
     }
+
+    // Loading platform model
+    let data = await loadObjParts(gl, platformUrl)
+    platform = {
+        p: data.p,
+        offset: data.offset,
+        r: data.r,
+    }
+    console.log('Platform:')
+    console.log(platform)
+
 }
 
 /**
@@ -139,6 +173,13 @@ async function selectColoredJumpman(gl, i) {
 
 
 
+function setMouseTrigger(canvas){
+    canvas.onmousedown = mouseDown;
+    canvas.onmouseup = mouseUp;
+    canvas.mouseout = mouseUp;
+    canvas.onmousemove = mouseMove;
+}
+
 /*
 ====================================
         Main Function of the 
@@ -147,8 +188,8 @@ async function selectColoredJumpman(gl, i) {
 */
 
 
-function loadAndRun(){
-// Get A WebGL context
+function loadAndRun() {
+    // Get A WebGL context
     /** @type {HTMLCanvasElement} */
     canvas = document.getElementById("game");
     gl = canvas.getContext("webgl");
@@ -156,9 +197,10 @@ function loadAndRun(){
         return;
     }
 
+    if(canvas) setMouseTrigger(canvas)
 
     // loading jumpmans 
-    initResource(gl).then(()=>{
+    initResource(gl).then(() => {
         loadingInterface(); // Starting the interface with the loading phase
         runSelectCharScene();
     })
@@ -226,13 +268,15 @@ async function runSelectCharScene() {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         // Compute the projection matrix
-        var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+        aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
         projectionMatrix =
             m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
 
         // camera going in circle 2 units from origin looking at origin
         // var cameraPosition = [Math.cos(time * .1) * 2, 0, Math.sin(time * .1) * 2];
-        cameraPosition = [0, 0, 7]
+        cameraPosition = [D * Math.sin(phi) * Math.cos(theta),
+            D * Math.sin(phi) * Math.sin(phi),
+            D * Math.cos(phi)];
         target = [0, 0, 0];
         up = [0, 1, 0];
         // Compute the camera's matrix using look at.
@@ -257,7 +301,7 @@ async function runSelectCharScene() {
 
 
         // ========= Set Ligh direction, view and projection matrix and camera position for the Jumpman ===========
-        const sharedUniforms = {
+        sharedUniforms = {
             u_lightDirection: m4.normalize([0.5, 1, 1]), // direction of the source light
             u_view: viewMatrix,
             u_projection: projectionMatrix,
@@ -283,22 +327,86 @@ async function runSelectCharScene() {
 
 
 
+
+function initGameScene(gl){
+
+    // starting resize and viewport reference space
+    webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+    // enable z-buffer and culling face 
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
+
+    // clear it again
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    // update camera, prospective and view according to the different initial point of view
+
+
+    // ==============================
+    //      Update Prospective
+    // ==============================
+    D = 20;
+
+    fieldOfViewRadians = degToRad(90);
+    target = [0,0,0];
+    up = [0,2,0]
+
+    // redefine matrices 
+    projectionMatrix =
+            m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
+
+        // camera going in circle 2 units from origin looking at origin
+        // var cameraPosition = [Math.cos(time * .1) * 2, 0, Math.sin(time * .1) * 2];
+        cameraPosition = [D * Math.sin(phi) * Math.cos(theta),
+            D * Math.sin(phi) * Math.sin(phi),
+            D * Math.cos(phi)];
+        target = [0, 0, 0];
+        up = [0, 1, 0];
+        // Compute the camera's matrix using look at.
+        cameraMatrix = m4.lookAt(cameraPosition, target, up);
+
+        // Make a view matrix from the camera matrix.
+        viewMatrix = m4.inverse(cameraMatrix);
+
+        // Rotate the cube around the x axis
+        worldMatrix = m4.identity();
+
+        // We only care about direciton so remove the translation
+        viewDirectionMatrix = m4.copy(viewMatrix);
+        viewDirectionMatrix[12] = 0;
+        viewDirectionMatrix[13] = 0;
+        viewDirectionMatrix[14] = 0;
+
+        viewDirectionProjectionMatrix = m4.multiply(
+            projectionMatrix, viewDirectionMatrix);
+        viewDirectionProjectionInverseMatrix =
+            m4.inverse(viewDirectionProjectionMatrix);
+
+
+        // update sharedUniforms for the platform
+        sharedUniforms = {
+            u_lightDirection: m4.normalize([0.5, 1, 1]), // direction of the source light
+            u_view: viewMatrix,
+            u_projection: projectionMatrix,
+            u_viewWorldPosition: cameraPosition,
+        };
+
+    // clear canvas before draw
+
+    drawPlatform(gl, envProgramInfo, sharedUniforms, platform.p, platform.offset, 0);
+    drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);
+}
 /**
  * Start Game Scene 
  */
 function startGameScene() {
-    // Clear the canvas AND the depth buffer.
+    // Remove Starting Scene Buttons
     toggleStartButtons();
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // draw Skybox
-    drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);
-
-    requestAnimationFrame(drawScene);
-    function drawGameScene(){
-
-        requestAnimationFrame(drawScene);
-    }
+    // draw Skybox and platform
+    initGameScene(gl);
 
 }
 // Load Scene on loading state
