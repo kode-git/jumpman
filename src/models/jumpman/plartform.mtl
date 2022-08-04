@@ -1,0 +1,126 @@
+# Blender MTL File: 'plartform.blend'
+# Material Count: 11
+
+newmtl Floor_Texture_1
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.627911 0.002937
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 0.200000 /Users/kode/Desktop/Jumpman/src/assets/game/normal-map/paper.jpeg
+
+newmtl Floor_Texture_1.002
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.005460 0.004626 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 0.050000 /Users/kode/Desktop/Jumpman/src/assets/game/normal-map/dotted.jpeg
+
+newmtl Floor_Texture_1.003
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.005460 0.004626 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 0.100000 /Users/kode/Desktop/Jumpman/src/assets/game/normal-map/dotted.jpeg
+
+newmtl Floor_Texture_1.004
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.005460 0.004626 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 0.010000 /Users/kode/Desktop/Jumpman/src/assets/game/normal-map/dotted.jpeg
+
+newmtl Floor_Texture_1.005
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.679699 0.058038 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 0.200000 /Users/kode/Desktop/Jumpman/src/assets/game/normal-map/paper.jpeg
+
+newmtl Floor_Texture_1.006
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.679699 0.058038 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 0.200000 /Users/kode/Desktop/Jumpman/src/assets/game/normal-map/paper.jpeg
+
+newmtl Floor_Texture_1.008
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.679699 0.058038 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 0.200000 /Users/kode/Desktop/Jumpman/src/assets/game/normal-map/paper.jpeg
+
+newmtl Floor_Texture_1.009
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.627911 0.002937
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 0.200000 /Users/kode/Desktop/Jumpman/src/assets/game/normal-map/paper.jpeg
+
+newmtl Main_Flooor
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 0.000000 /Users/kode/Desktop/Jumpman/src/assets/game/normal-map/ground_floor.png
+map_Kd /Users/kode/Desktop/Jumpman/src/assets/game/floor/floor_texture.png
+
+newmtl Main_Flooor.002
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 0.000000 /Users/kode/Desktop/Jumpman/src/assets/game/normal-map/ground_floor.png
+map_Kd /Users/kode/Desktop/Jumpman/src/assets/game/floor/floor_texture.png
+
+newmtl Materiale
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump /Users/kode/Desktop/Jumpman/src/assets/game/normal-map/paper.jpeg
+map_Kd /Users/kode/Desktop/Jumpman/src/assets/game/profile/76259752.png
