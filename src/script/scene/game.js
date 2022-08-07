@@ -19,7 +19,6 @@ var parts;
 var range;
 var objOffset;
 var sharedUniforms;
-
 // ======== Skybox Object ===========
 
 var quadBufferInfo; // SkyBox buffer
@@ -32,16 +31,19 @@ var ambient, diffuse, specular, emissive, shininess, opacity;
 
 // ========================================
 
-// Prospective 
+// ============= Prospective  =============
 var fieldOfViewRadians = degToRad(80);
 var aspect;
-var time, deltaTime, then = 0;
-
+var deltaTime, then = 0;
 // Camera 
 var cameraPosition, target, up;
 
 // Matrices
 var viewDirectionProjectionInverseMatrix, viewDirectionProjectionMatrix, worldMatrix, cameraMatrix, viewMatrix, projectionMatrix, viewDirectionMatrix;
+
+// ========================================
+
+// ======== Resource Urls ===========
 
 // Jumpmans objects
 const references = [
@@ -53,8 +55,19 @@ const references = [
 ];
 
 const platformUrl = 'src/models/platform/plartform.obj'
+const coinUrl = 'src/models/coin/coin.obj'
+
+// ======= Object variables ========
 var jumpmans = [];
+var coin;
 var platform;
+
+// initialize the coin positions
+const coinPosition = [[0,1.5,0], [-5,1.5,-3], [4, 1.5, -9], [10, 1.5, -7]]
+// =================================
+
+// Event management
+var mouseToggle = true;
 
 // index and oldIndex are in the buttonsControllers.js
 // var indexTexture = 0; // index of the wavefront object to load
@@ -139,6 +152,36 @@ function drawPlatform(gl, envProgramInfo, sharedUniforms, parts, objOffset, time
     }
 }
 
+/**
+ * Draw a coin element
+ * @param {*} gl is the WebGL context
+ * @param {*} envProgramInfo is the GLSL program
+ * @param {*} sharedUniforms is uniforms values
+ * @param {*} parts is parts of object
+ * @param {*} objOffset is the offset of the object
+ * @param {*} y is the rotation on y axe
+ */
+function drawCoin(gl, envProgramInfo, sharedUniforms, parts, objOffset, y, tx, ty, tz) {
+    console.log(y)
+    gl.depthFunc(gl.LESS);  // use the default depth test
+    gl.useProgram(envProgramInfo.program);
+    webglUtils.setUniforms(envProgramInfo, sharedUniforms);
+
+
+    // =========== Compute the world matrix once since all parts =========
+    let u_world = m4.identity();
+    u_world =  m4.translate(u_world, tx, ty, tz)
+    u_world = m4.translate(u_world, ...objOffset);
+    u_world = m4.multiply(u_world, m4.yRotation(y));
+    for (const { bufferInfo, material } of parts) {
+        webglUtils.setBuffersAndAttributes(gl, envProgramInfo, bufferInfo);
+        webglUtils.setUniforms(envProgramInfo, {
+            u_world,
+        }, material);
+        webglUtils.drawBufferInfo(gl, bufferInfo);
+    }
+}
+
 
 /**
  * Pre-loading of resources for faster game
@@ -153,6 +196,8 @@ async function initResource(gl) {
             offset: data.offset,
             r: data.r,
         })
+        console.log('Jumpman ' + i)
+        console.log(jumpmans[i])
     }
 
     // Loading platform model
@@ -165,6 +210,14 @@ async function initResource(gl) {
     console.log('Platform:')
     console.log(platform)
 
+    let dataCoin = await loadObjParts(gl, coinUrl)
+    coin = {
+        p: dataCoin.p,
+        offset: dataCoin.offset,
+        r: dataCoin.r,
+    }
+    console.log('Coin:')
+    console.log(coin)
 }
 
 /**
@@ -180,13 +233,23 @@ async function selectColoredJumpman(gl, i) {
     range = data.r;
 }
 
-
-
-function setMouseTrigger(canvas){
-    canvas.onmousedown = mouseDown;
-    canvas.onmouseup = mouseUp;
-    canvas.mouseout = mouseUp;
-    canvas.onmousemove = mouseMove;
+/**
+ * Add or remove Mouse listener
+ * @param {*} canvas is the canvas where apply or cancel listeners 
+ */
+function toggleMouseListener(canvas) {
+    if (mouseToggle) {
+        canvas.onmousedown = mouseDown;
+        canvas.onmouseup = mouseUp;
+        canvas.mouseout = mouseUp;
+        canvas.onmousemove = mouseMove;
+    } else {
+        canvas.onmousedown = (e) => { };
+        canvas.onmouseup = (e) => { };
+        canvas.onmouseout = (e) => { };
+        canvas.onmousemove = (e) => { };
+    }
+    mouseToggle = !mouseToggle;
 }
 
 /*
@@ -206,8 +269,6 @@ function loadAndRun() {
         return;
     }
 
-    if(canvas) setMouseTrigger(canvas)
-
     // loading jumpmans 
     initResource(gl).then(() => {
         loadingInterface(); // Starting the interface with the loading phase
@@ -215,7 +276,23 @@ function loadAndRun() {
     })
 }
 
+/**
+ * Clear the WebGL previous frame
+ * @param {*} gl 
+ */
+function clearFrame(gl) {
+    webglUtils.resizeCanvasToDisplaySize(gl.canvas);
 
+    // Tell WebGL how to convert from clip space to pixels
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+    gl.enable(gl.CULL_FACE);
+    gl.enable(gl.DEPTH_TEST);
+
+    // Clear the canvas AND the depth buffer.
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+}
 /**
  * Main function for the SelectChar Scene
  * @returns if WebGL is not supported
@@ -243,7 +320,7 @@ async function runSelectCharScene() {
     // Skybox BufferInfo
     quadBufferInfo = createXYQuadBufferInfo(gl);
     // Loading Texture
-    texture = createSkyboxTexture(gl);
+    if(!texture) texture = createSkyboxTexture(gl);
 
 
     requestAnimationFrame(drawScene);
@@ -265,17 +342,7 @@ async function runSelectCharScene() {
         // Remember the current time for the next frame.
         then = time;
 
-        webglUtils.resizeCanvasToDisplaySize(gl.canvas);
-
-        // Tell WebGL how to convert from clip space to pixels
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
-        gl.enable(gl.CULL_FACE);
-        gl.enable(gl.DEPTH_TEST);
-
-        // Clear the canvas AND the depth buffer.
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
+        clearFrame(gl);
         // Compute the projection matrix
         aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
         projectionMatrix =
@@ -284,8 +351,8 @@ async function runSelectCharScene() {
         // camera going in circle 2 units from origin looking at origin
         // var cameraPosition = [Math.cos(time * .1) * 2, 0, Math.sin(time * .1) * 2];
         cameraPosition = [D * Math.sin(phi) * Math.cos(theta),
-            D * Math.sin(phi) * Math.sin(phi),
-            D * Math.cos(phi)];
+        D * Math.sin(phi) * Math.sin(phi),
+        D * Math.cos(phi)];
         target = [0, 0, 0];
         up = [0, 1, 0];
         // Compute the camera's matrix using look at.
@@ -323,6 +390,7 @@ async function runSelectCharScene() {
         // draw Skybox
         drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);
 
+
         if (gameStart) startGameScene();
         else requestAnimationFrame(drawScene);
 
@@ -336,87 +404,98 @@ async function runSelectCharScene() {
 
 
 
-
-function initGameScene(gl){
-
-    // starting resize and viewport reference space
-    webglUtils.resizeCanvasToDisplaySize(gl.canvas);
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
-    // enable z-buffer and culling face 
-    gl.enable(gl.DEPTH_TEST);
-    gl.enable(gl.CULL_FACE);
-
-    // clear it again
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    // update camera, prospective and view according to the different initial point of view
+/**
+ * It manages the initial Game metadata
+ * @param {*} gl 
+ */
+function initGameScene(gl) {
+    if (canvas) toggleMouseListener(canvas)
+    D = 40;
+    theta = degToRad(90);
+    phi = degToRad(45);
+    deltaTime, then = 0;
+}
 
 
-    // ==============================
-    //      Update Prospective
-    // ==============================
-    D = 20;
+/**
+ * Frame Drawing 
+ */
+function drawGameScene(time) {
 
-    fieldOfViewRadians = degToRad(90);
-    target = [0,0,0];
-    up = [0,2,0]
+    // convert to seconds
+    time *= 0.001;
+    // Subtract the previous time from the current time
+    deltaTime = time - then;
+    // Remember the current time for the next frame.
+    then = time;
 
+    clearFrame(gl);
     // redefine matrices 
     projectionMatrix =
-            m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
+        m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
 
-        // camera going in circle 2 units from origin looking at origin
-        // var cameraPosition = [Math.cos(time * .1) * 2, 0, Math.sin(time * .1) * 2];
-        cameraPosition = [D * Math.sin(phi) * Math.cos(theta),
-            D * Math.sin(phi) * Math.sin(phi),
-            D * Math.cos(phi)];
-        target = [0, 0, 0];
-        up = [0, 1, 0];
-        // Compute the camera's matrix using look at.
-        cameraMatrix = m4.lookAt(cameraPosition, target, up);
+    // camera going in circle 2 units from origin looking at origin
+    // var cameraPosition = [Math.cos(time * .1) * 2, 0, Math.sin(time * .1) * 2];
+    cameraPosition = [D * Math.sin(phi) * Math.cos(theta),
+    D * Math.sin(phi) * Math.sin(phi),
+    D * Math.cos(phi)];
 
-        // Make a view matrix from the camera matrix.
-        viewMatrix = m4.inverse(cameraMatrix);
+    target = [0, 0, 0];
+    up = [0, 1, 0];
+    // Compute the camera's matrix using look at.
+    cameraMatrix = m4.lookAt(cameraPosition, target, up);
 
-        // Rotate the cube around the x axis
-        worldMatrix = m4.identity();
+    // Make a view matrix from the camera matrix.
+    viewMatrix = m4.inverse(cameraMatrix);
 
-        // We only care about direciton so remove the translation
-        viewDirectionMatrix = m4.copy(viewMatrix);
-        viewDirectionMatrix[12] = 0;
-        viewDirectionMatrix[13] = 0;
-        viewDirectionMatrix[14] = 0;
+    // Rotate the cube around the x axis
+    worldMatrix = m4.identity();
 
-        viewDirectionProjectionMatrix = m4.multiply(
-            projectionMatrix, viewDirectionMatrix);
-        viewDirectionProjectionInverseMatrix =
-            m4.inverse(viewDirectionProjectionMatrix);
+    // We only care about direciton so remove the translation
+    viewDirectionMatrix = m4.copy(viewMatrix);
+    viewDirectionMatrix[12] = 0;
+    viewDirectionMatrix[13] = 0;
+    viewDirectionMatrix[14] = 0;
+
+    viewDirectionProjectionMatrix = m4.multiply(
+        projectionMatrix, viewDirectionMatrix);
+    viewDirectionProjectionInverseMatrix =
+        m4.inverse(viewDirectionProjectionMatrix);
 
 
-        // update sharedUniforms for the platform
-        sharedUniforms = {
-            u_lightDirection: m4.normalize([0.5, 1, 1]), // direction of the source light
-            u_view: viewMatrix,
-            u_projection: projectionMatrix,
-            u_viewWorldPosition: cameraPosition,
-        };
+    // update sharedUniforms for the platform
+    sharedUniforms = {
+        u_lightDirection: m4.normalize([0, 0.2, 0]), // direction of the source light
+        u_view: viewMatrix,
+        u_projection: projectionMatrix,
+        u_viewWorldPosition: cameraPosition,
+    };
 
     // clear canvas before draw
 
     drawPlatform(gl, envProgramInfo, sharedUniforms, platform.p, platform.offset, 0);
+    for(let i = 0; i < coinPosition.length; i++){
+        drawCoin(gl, envProgramInfo, sharedUniforms, coin.p, coin.offset, time, coinPosition[i][0], coinPosition[i][1], coinPosition[i][2]);
+    }
     drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);
+    requestAnimationFrame(drawGameScene)
 }
+
+
+
 /**
  * Start Game Scene 
  */
+
 function startGameScene() {
     // Remove Starting Scene Buttons
     toggleStartButtons();
+    // starting resize and viewport reference space
 
-    // draw Skybox and platform
+    // modify metadata
     initGameScene(gl);
-
+    // draw Game Scene
+    requestAnimationFrame(drawGameScene);
 }
 // Load Scene on loading state
 window.onload = loadAndRun;

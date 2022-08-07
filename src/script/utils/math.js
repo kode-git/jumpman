@@ -25,3 +25,24 @@ function degToRad(deg){
 function radToDeg(rad){
     return rad * 180 / Math.PI;
 }
+
+/**
+ * Return a float number between min and max
+ * @param {number} min is the minimum value
+ * @param {number} max is the maximum value
+ * @returns a random value between min and max
+ */
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+
+  /**
+   * Return an integer random value between min and max
+   * @param {number} min is the minimum value
+   * @param {number} max is the maximum value
+   * @returns a random vsalue between min and max
+   */
+function getRandomInteger(min, max){
+    return Math.floor(getRandomArbitrary(min, max));
+}

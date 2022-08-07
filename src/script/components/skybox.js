@@ -7,20 +7,20 @@
   
     const faceInfos = [
       {
+        target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
+        url: 'src/assets/game/skybox/top.png',
+      },
+      {
+        target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
+        url: 'src/assets/game/skybox/bottom.png',
+      },
+      {
         target: gl.TEXTURE_CUBE_MAP_POSITIVE_X,
         url: 'src/assets/game/skybox/right.png',
       },
       {
         target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
         url: 'src/assets/game/skybox/left.png',
-      },
-      {
-        target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
-        url: 'src/assets/game/skybox/top.png',
-      },
-      {
-        target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
-        url: 'src/assets/game/skybox/bottom.png',
       },
       {
         target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
@@ -37,8 +37,8 @@
       // Upload the canvas to the cubemap face.
       const level = 0;
       const internalFormat = gl.RGBA;
-      const width = 512;
-      const height = 512;
+      const width = 1024;
+      const height = 1024;
       const format = gl.RGBA;
       const type = gl.UNSIGNED_BYTE;
   
@@ -56,6 +56,8 @@
         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
       });
     });
+
+
     gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 

@@ -259,7 +259,7 @@ function createTexture(gl, url) {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
         // Check if the image is a power of 2 in both dimensions.
-        if (utilityGL.isPowerOf2(image.width) && utilityGL.isPowerOf2(image.height)) {
+        if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
             // Yes, it's a power of 2. Generate mips.
             gl.generateMipmap(gl.TEXTURE_2D);
         } else {

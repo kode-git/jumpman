@@ -4,8 +4,10 @@
 var drag = false;
 var lastX, lastY;
 var dX = 0, dY = 0;
-var theta = 0, phi = 0;
-var D = 10;
+var theta = degToRad(90);
+var phi = degToRad(10);
+var D = 7;
+var abs;
 /**
  * Listener for the mouse down
  * @param {*} e
