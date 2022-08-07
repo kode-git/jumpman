@@ -54,16 +54,27 @@ const references = [
     'src/models/jumpman/green_baseline.obj',
 ];
 
-const platformUrl = 'src/models/platform/plartform.obj'
-const coinUrl = 'src/models/coin/coin.obj'
+const platformUrl = 'src/models/platform/plartform.obj';
+const coinUrl = 'src/models/coin/coin.obj';
+const obstacleUrl = 'src/models/obstacle/obstacle.obj';
 
 // ======= Object variables ========
 var jumpmans = [];
 var coin;
 var platform;
+var obstacle;
 
 // initialize the coin positions
-const coinPosition = [[0,1.5,0], [-5,1.5,-3], [4, 1.5, -9], [10, 1.5, -7]]
+const coinPosition = [[0,1.5,0], [-5,1.5,-3], [4, 1.5, -9], [10, 1.5, -7], [4, 1.5, 4]]
+
+// initialize the starting 
+var obstaclePosition = [
+    // movement on z 
+    [-10,2.7, -24],     
+    [-3, 2.7, -24],
+    [4, 2.7, -24],
+    [11, 2.7, -24],
+]
 // =================================
 
 // Event management
@@ -133,15 +144,14 @@ function drawJumpman(gl, envProgramInfo, sharedUniforms, parts, objOffset, time)
  * @param {*} sharedUniforms is uniforms values
  * @param {*} parts is parts of the object
  * @param {*} objOffset is the offset of the object
- * @param {*} time is the rotation time
  */
-function drawPlatform(gl, envProgramInfo, sharedUniforms, parts, objOffset, time) {
+function drawPlatform(gl, envProgramInfo, sharedUniforms, parts, objOffset) {
     gl.depthFunc(gl.LESS);  // use the default depth test
     gl.useProgram(envProgramInfo.program);
     webglUtils.setUniforms(envProgramInfo, sharedUniforms);
 
     // =========== Compute the world matrix once since all parts =========
-    let u_world = m4.yRotation(time);
+    let u_world = m4.identity();
     u_world = m4.translate(u_world, ...objOffset);
     for (const { bufferInfo, material } of parts) {
         webglUtils.setBuffersAndAttributes(gl, envProgramInfo, bufferInfo);
@@ -162,7 +172,7 @@ function drawPlatform(gl, envProgramInfo, sharedUniforms, parts, objOffset, time
  * @param {*} y is the rotation on y axe
  */
 function drawCoin(gl, envProgramInfo, sharedUniforms, parts, objOffset, y, tx, ty, tz) {
-    console.log(y)
+
     gl.depthFunc(gl.LESS);  // use the default depth test
     gl.useProgram(envProgramInfo.program);
     webglUtils.setUniforms(envProgramInfo, sharedUniforms);
@@ -173,6 +183,27 @@ function drawCoin(gl, envProgramInfo, sharedUniforms, parts, objOffset, y, tx, t
     u_world =  m4.translate(u_world, tx, ty, tz)
     u_world = m4.translate(u_world, ...objOffset);
     u_world = m4.multiply(u_world, m4.yRotation(y));
+    for (const { bufferInfo, material } of parts) {
+        webglUtils.setBuffersAndAttributes(gl, envProgramInfo, bufferInfo);
+        webglUtils.setUniforms(envProgramInfo, {
+            u_world,
+        }, material);
+        webglUtils.drawBufferInfo(gl, bufferInfo);
+    }
+}
+
+function drawObstacle(gl, envProgramInfo, sharedUniforms, parts, objOffset, y, tx, ty, tz){
+    gl.depthFunc(gl.LESS);  // use the default depth test
+    gl.useProgram(envProgramInfo.program);
+    webglUtils.setUniforms(envProgramInfo, sharedUniforms);
+
+    // =========== Compute the world matrix once since all parts =========
+    let u_world = m4.identity();
+    u_world =  m4.translate(u_world, tx, ty, tz)
+    u_world = m4.translate(u_world, ...objOffset);
+    u_world = m4.multiply(u_world, m4.yRotation(y));
+
+
     for (const { bufferInfo, material } of parts) {
         webglUtils.setBuffersAndAttributes(gl, envProgramInfo, bufferInfo);
         webglUtils.setUniforms(envProgramInfo, {
@@ -218,6 +249,15 @@ async function initResource(gl) {
     }
     console.log('Coin:')
     console.log(coin)
+
+    let dataObstacle = await loadObjParts(gl, obstacleUrl);
+    obstacle = {
+        p : dataObstacle.p,
+        offset: dataObstacle.offset,
+        r : dataObstacle.r,
+    }
+    console.log('Obstacle:')
+    console.log(obstacle)
 }
 
 /**
@@ -410,7 +450,7 @@ async function runSelectCharScene() {
  */
 function initGameScene(gl) {
     if (canvas) toggleMouseListener(canvas)
-    D = 40;
+    D = 20;
     theta = degToRad(90);
     phi = degToRad(45);
     deltaTime, then = 0;
@@ -473,9 +513,13 @@ function drawGameScene(time) {
 
     // clear canvas before draw
 
-    drawPlatform(gl, envProgramInfo, sharedUniforms, platform.p, platform.offset, 0);
+    drawPlatform(gl, envProgramInfo, sharedUniforms, platform.p, platform.offset);
     for(let i = 0; i < coinPosition.length; i++){
         drawCoin(gl, envProgramInfo, sharedUniforms, coin.p, coin.offset, time, coinPosition[i][0], coinPosition[i][1], coinPosition[i][2]);
+    }
+
+    for(let i = 0; i < obstaclePosition.length; i++){
+        drawObstacle(gl, envProgramInfo, sharedUniforms, obstacle.p, obstacle.offset, 0, obstaclePosition[i][0], obstaclePosition[i][1], obstaclePosition[i][2] );
     }
     drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);
     requestAnimationFrame(drawGameScene)
