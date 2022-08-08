@@ -37,7 +37,7 @@ var fieldOfViewRadians = degToRad(80);
 var aspect;
 var deltaTime, then = 0;
 // Camera 
-var cameraPosition, target, up;
+var cameraPosition, cameraAngle, target, up;
 
 // Matrices
 var viewDirectionProjectionInverseMatrix, viewDirectionProjectionMatrix, worldMatrix, cameraMatrix, viewMatrix, projectionMatrix, viewDirectionMatrix;
@@ -335,17 +335,21 @@ function updateObstacles(time){
  * Add or remove Mouse listener
  * @param {*} canvas is the canvas where apply or cancel listeners 
  */
-function toggleMouseListener(canvas) {
+function toggleListener(canvas) {
     if (mouseToggle) {
         canvas.onmousedown = mouseDown;
         canvas.onmouseup = mouseUp;
         canvas.mouseout = mouseUp;
         canvas.onmousemove = mouseMove;
+        window.addEventListener('keydown', keyDown);
+        window.addEventListener('keyup', keyUp);
     } else {
         canvas.onmousedown = (e) => { };
         canvas.onmouseup = (e) => { };
         canvas.onmouseout = (e) => { };
         canvas.onmousemove = (e) => { };
+        window.addEventListener('keydown', (e)=>{});
+        window.addEventListener('keyup', (e)=>{});
     }
     mouseToggle = !mouseToggle;
 }
@@ -508,10 +512,11 @@ async function runSelectCharScene() {
  * @param {*} gl 
  */
 function initGameScene(gl) {
-    if (canvas) toggleMouseListener(canvas)
+    if (canvas) toggleListener(canvas)
     D = 20;
     theta = degToRad(90);
     phi = degToRad(45);
+    cameraAngle = degToRad(0)
     deltaTime, then = 0;
 }
 
@@ -530,6 +535,11 @@ function drawGameScene(time) {
     then = time;
 
     clearFrame(gl);
+
+    // Update zoom and angle of camera 
+    if(zoomKey[0]) D += 1;
+    if(zoomKey[1]) D-= 1;
+
     // redefine matrices 
     projectionMatrix =
         m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
@@ -570,6 +580,7 @@ function drawGameScene(time) {
         u_projection: projectionMatrix,
         u_viewWorldPosition: cameraPosition,
     };
+
 
 
 
