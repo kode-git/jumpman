@@ -19,6 +19,7 @@ var parts;
 var range;
 var objOffset;
 var sharedUniforms;
+
 // ======== Skybox Object ===========
 
 var quadBufferInfo; // SkyBox buffer
@@ -54,8 +55,16 @@ const references = [
     'src/models/jumpman/green_baseline.obj',
 ];
 
+// Colors of jumpman
+const colors = ['purple', 'orange', 'red', 'turquoise', 'green'] 
+
+// Platform
 const platformUrl = 'src/models/platform/plartform.obj';
+
+// Coins
 const coinUrl = 'src/models/coin/coin.obj';
+
+// Obstacles
 const obstacleUrl = 'src/models/obstacle/obstacle.obj';
 
 // ======= Object variables ========
@@ -67,6 +76,8 @@ var obstacle;
 // initialize the coin positions
 const coinPosition = [[0,1.5,0], [-5,1.5,-3], [4, 1.5, -9], [10, 1.5, -7], [4, 1.5, 4]]
 
+
+// =========== Obstacles Variables ============
 // initialize the starting 
 var obstaclePosition = [
     // movement on z 
@@ -75,6 +86,9 @@ var obstaclePosition = [
     [4, 2.7, -24],
     [11, 2.7, -24],
 ]
+var obstacleAppearance = [true, true, true, false];
+var initialAppearance = [true, true, true, true];
+var obstacleSpeed = 0.0014;
 // =================================
 
 // Event management
@@ -192,6 +206,18 @@ function drawCoin(gl, envProgramInfo, sharedUniforms, parts, objOffset, y, tx, t
     }
 }
 
+/**
+ * Draw an obstacle in the scene
+ * @param {*} gl is the WebGL context
+ * @param {*} envProgramInfo is the GLSL program to draw obstacle
+ * @param {*} sharedUniforms uniforms variables for the GLSL program
+ * @param {*} parts set of parts of the mesh for the light and other effects
+ * @param {*} objOffset is the offset of the position for the object 
+ * @param {*} y is the rotation degree
+ * @param {*} tx is the x translation
+ * @param {*} ty is the y translation
+ * @param {*} tz is the z translation
+ */
 function drawObstacle(gl, envProgramInfo, sharedUniforms, parts, objOffset, y, tx, ty, tz){
     gl.depthFunc(gl.LESS);  // use the default depth test
     gl.useProgram(envProgramInfo.program);
@@ -273,6 +299,38 @@ async function selectColoredJumpman(gl, i) {
     range = data.r;
 }
 
+
+/**
+ * Reinitialize a new set of obstacles
+ */
+function newObstacleDisposition(){
+
+    let position = getRandomInteger(0,4);
+    for(let j = 0; j < obstacleAppearance.length; j++){
+        obstacleAppearance[j] = true;
+    }
+    obstacleAppearance[position] = false; 
+    // reset position
+    for(let i = 0; i<obstaclePosition.length; i++){
+        obstaclePosition[i][2] = (-1) * 24;
+    }    
+}
+
+/**
+ * Update the z position on the world space for obstacles, simulating the movement in the player PoV. 
+ * @param {*} time is the time frame used for the movement animation
+ */
+function updateObstacles(time){
+    for(let i = 0; i < obstaclePosition.length; i++){
+        if(obstaclePosition[0][2] >= 24){
+            // last spot for the session movement
+            console.log('Update obstacle Position')
+            newObstacleDisposition();
+        } else obstaclePosition[i][2] += 0.1 // z update for obstacle i
+    }
+    console.log(obstaclePosition[0][2])
+}
+
 /**
  * Add or remove Mouse listener
  * @param {*} canvas is the canvas where apply or cancel listeners 
@@ -333,6 +391,7 @@ function clearFrame(gl) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 }
+
 /**
  * Main function for the SelectChar Scene
  * @returns if WebGL is not supported
@@ -464,6 +523,7 @@ function drawGameScene(time) {
 
     // convert to seconds
     time *= 0.001;
+
     // Subtract the previous time from the current time
     deltaTime = time - then;
     // Remember the current time for the next frame.
@@ -511,17 +571,27 @@ function drawGameScene(time) {
         u_viewWorldPosition: cameraPosition,
     };
 
-    // clear canvas before draw
 
+
+    //draw platform 
     drawPlatform(gl, envProgramInfo, sharedUniforms, platform.p, platform.offset);
     for(let i = 0; i < coinPosition.length; i++){
         drawCoin(gl, envProgramInfo, sharedUniforms, coin.p, coin.offset, time, coinPosition[i][0], coinPosition[i][1], coinPosition[i][2]);
     }
 
+    // update the obstales positions and appearances
+    updateObstacles(time); 
+
+    // draw obstacles
     for(let i = 0; i < obstaclePosition.length; i++){
+        if(obstacleAppearance[i])
         drawObstacle(gl, envProgramInfo, sharedUniforms, obstacle.p, obstacle.offset, 0, obstaclePosition[i][0], obstaclePosition[i][1], obstaclePosition[i][2] );
     }
+
+    // draw Skybox
     drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);
+
+    // animation frame iteration
     requestAnimationFrame(drawGameScene)
 }
 
