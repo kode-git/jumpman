@@ -46,14 +46,18 @@ var viewDirectionProjectionInverseMatrix, viewDirectionProjectionMatrix, worldMa
 
 // ======== Resource Urls ===========
 
-// Jumpmans objects
-const references = [
+// Starting Jumpman references
+const startJumpmanUrls = [
     'src/models/jumpman/purple_baseline.obj',
     'src/models/jumpman/orange_baseline.obj',
     'src/models/jumpman/start_baseline.obj',
     'src/models/jumpman/turquoise_baseline.obj',
     'src/models/jumpman/green_baseline.obj',
 ];
+
+// Game Jumpman
+const bodyUrl = 'src/models/gameBody/body.obj'
+const feetUrl = 'src/models/gameFeet/feet.obj'
 
 // Colors of jumpman
 const colors = ['purple', 'orange', 'red', 'turquoise', 'green'] 
@@ -72,6 +76,12 @@ var jumpmans = [];
 var coin;
 var platform;
 var obstacle;
+var feet;
+var body;
+
+
+// initilize the jumpman position
+var jumpmanPosition = [0,1.5,0] // feet level
 
 // initialize the coin positions
 const coinPosition = [[0,1.5,0], [-5,1.5,-3], [4, 1.5, -9], [10, 1.5, -7], [4, 1.5, 4]]
@@ -246,8 +256,8 @@ function drawObstacle(gl, envProgramInfo, sharedUniforms, parts, objOffset, y, t
  */
 async function initResource(gl) {
     // Loading of jumpmans models
-    for (let i = 0; i < references.length; i++) {
-        let data = await loadObjParts(gl, references[i]);
+    for (let i = 0; i < startJumpmanUrls.length; i++) {
+        let data = await loadObjParts(gl, startJumpmanUrls[i]);
         jumpmans.push({
             p: data.p,
             offset: data.offset,
@@ -284,6 +294,26 @@ async function initResource(gl) {
     }
     console.log('Obstacle:')
     console.log(obstacle)
+
+    let dataBody = await loadObjParts(gl, bodyUrl);
+    body = {
+        p: dataBody.p,
+        offset : dataBody.offset,
+        r : dataBody.r,
+    }
+
+    console.log('Body:')
+    console.log(body)
+
+    let dataFeet = await loadObjParts(gl, feetUrl);
+    feet = {
+        p : dataFeet.p,
+        offset: dataFeet.offset,
+        r : dataFeet.r,
+    }
+
+    console.log('Feet:')
+    console.log(feet)
 }
 
 /**
@@ -292,7 +322,7 @@ async function initResource(gl) {
  * @param {*} i is the index of the colored object wavefront
  */
 async function selectColoredJumpman(gl, i) {
-    i = Math.abs(i) % references.length;
+    i = Math.abs(i) % startJumpmanUrls.length;
     var data = jumpmans[i]
     parts = data.p;
     objOffset = data.offset;
@@ -598,6 +628,8 @@ function drawGameScene(time) {
         if(obstacleAppearance[i])
         drawObstacle(gl, envProgramInfo, sharedUniforms, obstacle.p, obstacle.offset, 0, obstaclePosition[i][0], obstaclePosition[i][1], obstaclePosition[i][2] );
     }
+
+    drawGameJumpman(gl, envProgramInfo, sharedUniforms, body, feet, 0, jumpmanPosition);
 
     // draw Skybox
     drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);
