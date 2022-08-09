@@ -58,6 +58,8 @@ const startJumpmanUrls = [
 // Game Jumpman
 const bodyUrl = 'src/models/gameBody/body.obj'
 const feetUrl = 'src/models/gameFeet/feet.obj'
+const feetRightUrl = 'src/models/gameFeet/rightFeet.obj'
+const feetLeftUrl = 'src/models/gameFeet/leftFeet.obj'
 
 // Colors of jumpman
 const colors = ['purple', 'orange', 'red', 'turquoise', 'green']
@@ -77,6 +79,8 @@ var coin;
 var platform;
 var obstacle;
 var feet;
+var leftFeet;
+var rightFeet;
 var body;
 
 
@@ -123,7 +127,7 @@ var mouseToggle = true;
  * Pre-loading of resources for faster game
  * @param {*} gl 
  */
- async function initResource(gl) {
+async function initResource(gl) {
     // Loading of jumpmans models
     for (let i = 0; i < startJumpmanUrls.length; i++) {
         let data = await loadObjParts(gl, startJumpmanUrls[i]);
@@ -179,6 +183,20 @@ var mouseToggle = true;
         p: dataFeet.p,
         offset: dataFeet.offset,
         r: dataFeet.r,
+    }
+
+    let dataRightFeet = await loadObjParts(gl, feetRightUrl);
+    rightFeet = {
+        p: dataRightFeet.p,
+        offset: dataRightFeet.offset,
+        r: dataRightFeet.r,
+    }
+
+    let dataLeftFeet = await loadObjParts(gl, feetLeftUrl);
+    leftFeet = {
+        p: dataLeftFeet.p,
+        offset: dataLeftFeet.offset,
+        r: dataLeftFeet.r,
     }
 
     console.log('Feet:')
@@ -377,12 +395,28 @@ function drawGameJumpman(gl, envProgramInfo, sharedUniforms, body, feet, rot, po
         webglUtils.drawBufferInfo(gl, bufferInfo);
     }
 
+    // restore origin y
     pos[1] = oldY;
+}
 
-    // =========== Compute the world matrix once since all parts of feet =========
-    u_world = m4.identity();
+
+function drawFeet(gl, envProgramInfo, sharedUniforms, feet, rot, pos, type){
+    gl.depthFunc(gl.LESS);  // use the default depth test
+    gl.useProgram(envProgramInfo.program);
+    webglUtils.setUniforms(envProgramInfo, sharedUniforms);
+
+    let dispose = [0, 0, 0]
+    if (type) {
+        dispose[0] -= 0.4;
+    } else {
+        dispose[0] += 0.4;
+    }
+
+    // =========== Compute the world matrix once since all parts of body =========
+    let u_world = m4.identity();
     u_world = m4.translate(u_world, pos[0], pos[1], pos[2])
     u_world = m4.translate(u_world, ...feet.offset);
+    u_world = m4.translate(u_world, ...dispose)
     u_world = m4.multiply(u_world, m4.yRotation(degToRad(rot[1])));
 
 
@@ -399,28 +433,28 @@ function drawGameJumpman(gl, envProgramInfo, sharedUniforms, body, feet, rot, po
  * 
  */
 function updateJumpmanMove() {
-    if(moveKey[0] == true)  { // a key
+    if (moveKey[0] == true) { // a key
         jumpmanPosition[0] -= speedMove;
         jumpmanRotation[1] = 270;
     }
-    if(moveKey[1] == true){ // w key
+    if (moveKey[1] == true) { // w key
         jumpmanPosition[2] -= speedMove;
         jumpmanRotation[1] = 180;
-    } 
-    if(moveKey[2] == true) { // s key 
+    }
+    if (moveKey[2] == true) { // s key 
         jumpmanPosition[2] += speedMove;
         jumpmanRotation[1] = 0;
     }
-    if(moveKey[3] == true)  { // d key
+    if (moveKey[3] == true) { // d key
         jumpmanPosition[0] += speedMove;
         jumpmanRotation[1] = 90;
     }
 
     // combination of keys for rotation
-    if(moveKey[1] && moveKey[0]) jumpmanRotation[1] = 225;
-    if(moveKey[2] && moveKey[0]) jumpmanRotation[1] = 315;
-    if(moveKey[2] && moveKey[3]) jumpmanRotation[1] = 45;
-    if(moveKey[3] && moveKey[1]) jumpmanRotation[1] = 135;
+    if (moveKey[1] && moveKey[0]) jumpmanRotation[1] = 225;
+    if (moveKey[2] && moveKey[0]) jumpmanRotation[1] = 315;
+    if (moveKey[2] && moveKey[3]) jumpmanRotation[1] = 45;
+    if (moveKey[3] && moveKey[1]) jumpmanRotation[1] = 135;
 }
 
 // jumpmanPosition and jumpmanRotation
@@ -730,6 +764,8 @@ function drawGameScene(time) {
 
     drawGameJumpman(gl, envProgramInfo, sharedUniforms, body, feet, jumpmanRotation, jumpmanPosition, jumpmanScale);
 
+    drawFeet(gl, envProgramInfo, sharedUniforms, rightFeet, jumpmanRotation, jumpmanPosition, 1);
+    drawFeet(gl, envProgramInfo, sharedUniforms, leftFeet, jumpmanRotation, jumpmanPosition, 0);
     // draw Skybox
     drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);
 
