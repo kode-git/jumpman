@@ -60,7 +60,7 @@ const bodyUrl = 'src/models/gameBody/body.obj'
 const feetUrl = 'src/models/gameFeet/feet.obj'
 
 // Colors of jumpman
-const colors = ['purple', 'orange', 'red', 'turquoise', 'green'] 
+const colors = ['purple', 'orange', 'red', 'turquoise', 'green']
 
 // Platform
 const platformUrl = 'src/models/platform/plartform.obj';
@@ -81,17 +81,20 @@ var body;
 
 
 // initilize the jumpman position
-var jumpmanPosition = [0,1.5,0] // feet level
+var jumpmanPosition = [0, 0.5, 12] // feet level
+var jumpmanScale = [0.8, 0.8, 0.8] // scale body
+var jumpmanRotation = [0, 180, 0] // degree of rotation
+const feetOffset = 2.1 // feet offset for the body level on y axe
+var speedMove = 0.1;
 
 // initialize the coin positions
-const coinPosition = [[0,1.5,0], [-5,1.5,-3], [4, 1.5, -9], [10, 1.5, -7], [4, 1.5, 4]]
-
+const coinPosition = [[0, 1.5, 0], [-5, 1.5, -3], [4, 1.5, -9], [10, 1.5, -7], [4, 1.5, 4]]
 
 // =========== Obstacles Variables ============
 // initialize the starting 
 var obstaclePosition = [
     // movement on z 
-    [-10,2.7, -24],     
+    [-10, 2.7, -24],
     [-3, 2.7, -24],
     [4, 2.7, -24],
     [11, 2.7, -24],
@@ -114,6 +117,88 @@ var mouseToggle = true;
           SelectChar Scene 
 ====================================
 */
+
+
+/**
+ * Pre-loading of resources for faster game
+ * @param {*} gl 
+ */
+ async function initResource(gl) {
+    // Loading of jumpmans models
+    for (let i = 0; i < startJumpmanUrls.length; i++) {
+        let data = await loadObjParts(gl, startJumpmanUrls[i]);
+        jumpmans.push({
+            p: data.p,
+            offset: data.offset,
+            r: data.r,
+        })
+        console.log('Jumpman ' + i)
+        console.log(jumpmans[i])
+    }
+
+    // Loading platform model
+    let data = await loadObjParts(gl, platformUrl)
+    platform = {
+        p: data.p,
+        offset: data.offset,
+        r: data.r,
+    }
+    console.log('Platform:')
+    console.log(platform)
+
+    let dataCoin = await loadObjParts(gl, coinUrl)
+    coin = {
+        p: dataCoin.p,
+        offset: dataCoin.offset,
+        r: dataCoin.r,
+    }
+    console.log('Coin:')
+    console.log(coin)
+
+    let dataObstacle = await loadObjParts(gl, obstacleUrl);
+    obstacle = {
+        p: dataObstacle.p,
+        offset: dataObstacle.offset,
+        r: dataObstacle.r,
+    }
+    console.log('Obstacle:')
+    console.log(obstacle)
+
+    let dataBody = await loadObjParts(gl, bodyUrl);
+    body = {
+        p: dataBody.p,
+        offset: dataBody.offset,
+        r: dataBody.r,
+    }
+
+    console.log('Body:')
+    console.log(body)
+
+    let dataFeet = await loadObjParts(gl, feetUrl);
+    feet = {
+        p: dataFeet.p,
+        offset: dataFeet.offset,
+        r: dataFeet.r,
+    }
+
+    console.log('Feet:')
+    console.log(feet)
+}
+
+/**
+ * Select a different color for the jumpman
+ * @param {*} gl is the WebGL context
+ * @param {*} i is the index of the colored object wavefront
+ */
+async function selectColoredJumpman(gl, i) {
+    i = Math.abs(i) % startJumpmanUrls.length;
+    var data = jumpmans[i]
+    parts = data.p;
+    objOffset = data.offset;
+    range = data.r;
+}
+
+
 
 /**
  * Draw the skybox using its embdedded GLSL program with the buffer, projection of the view direction and texture for the scene orientation
@@ -161,6 +246,23 @@ function drawJumpman(gl, envProgramInfo, sharedUniforms, parts, objOffset, time)
 }
 
 
+/*
+====================================
+        Step Functions of the 
+            Game Scene 
+====================================
+*/
+
+
+/**
+ * Update zoom according to the key pressing
+ */
+function zoomUpdate() {
+    if (zoomKey[0]) D += 1;
+    if (zoomKey[1]) D -= 1;
+}
+
+
 /**
  * Draw the platform 
  * @param {*} gl is the WebGL context
@@ -204,7 +306,7 @@ function drawCoin(gl, envProgramInfo, sharedUniforms, parts, objOffset, y, tx, t
 
     // =========== Compute the world matrix once since all parts =========
     let u_world = m4.identity();
-    u_world =  m4.translate(u_world, tx, ty, tz)
+    u_world = m4.translate(u_world, tx, ty, tz)
     u_world = m4.translate(u_world, ...objOffset);
     u_world = m4.multiply(u_world, m4.yRotation(y));
     for (const { bufferInfo, material } of parts) {
@@ -228,14 +330,14 @@ function drawCoin(gl, envProgramInfo, sharedUniforms, parts, objOffset, y, tx, t
  * @param {*} ty is the y translation
  * @param {*} tz is the z translation
  */
-function drawObstacle(gl, envProgramInfo, sharedUniforms, parts, objOffset, y, tx, ty, tz){
+function drawObstacle(gl, envProgramInfo, sharedUniforms, parts, objOffset, y, tx, ty, tz) {
     gl.depthFunc(gl.LESS);  // use the default depth test
     gl.useProgram(envProgramInfo.program);
     webglUtils.setUniforms(envProgramInfo, sharedUniforms);
 
     // =========== Compute the world matrix once since all parts =========
     let u_world = m4.identity();
-    u_world =  m4.translate(u_world, tx, ty, tz)
+    u_world = m4.translate(u_world, tx, ty, tz)
     u_world = m4.translate(u_world, ...objOffset);
     u_world = m4.multiply(u_world, m4.yRotation(y));
 
@@ -250,109 +352,102 @@ function drawObstacle(gl, envProgramInfo, sharedUniforms, parts, objOffset, y, t
 }
 
 
-/**
- * Pre-loading of resources for faster game
- * @param {*} gl 
- */
-async function initResource(gl) {
-    // Loading of jumpmans models
-    for (let i = 0; i < startJumpmanUrls.length; i++) {
-        let data = await loadObjParts(gl, startJumpmanUrls[i]);
-        jumpmans.push({
-            p: data.p,
-            offset: data.offset,
-            r: data.r,
-        })
-        console.log('Jumpman ' + i)
-        console.log(jumpmans[i])
+function drawGameJumpman(gl, envProgramInfo, sharedUniforms, body, feet, rot, pos, scale) {
+    gl.depthFunc(gl.LESS);  // use the default depth test
+    gl.useProgram(envProgramInfo.program);
+    webglUtils.setUniforms(envProgramInfo, sharedUniforms);
+
+    // position is on the feet level, we need to translate it on y axe from on the offset for the feet level
+    var oldY = pos[1]
+    pos[1] = pos[1] + feetOffset; // Warning: in case of scaling, we need to change offset
+
+    // =========== Compute the world matrix once since all parts of body =========
+    let u_world = m4.identity();
+    u_world = m4.translate(u_world, pos[0], pos[1], pos[2])
+    u_world = m4.translate(u_world, ...body.offset);
+    u_world = m4.scale(u_world, scale[0], scale[1], scale[2])
+    u_world = m4.multiply(u_world, m4.yRotation(degToRad(rot[1])));
+
+
+    for (const { bufferInfo, material } of body.p) {
+        webglUtils.setBuffersAndAttributes(gl, envProgramInfo, bufferInfo);
+        webglUtils.setUniforms(envProgramInfo, {
+            u_world,
+        }, material);
+        webglUtils.drawBufferInfo(gl, bufferInfo);
     }
 
-    // Loading platform model
-    let data = await loadObjParts(gl, platformUrl)
-    platform = {
-        p: data.p,
-        offset: data.offset,
-        r: data.r,
+    pos[1] = oldY;
+
+    // =========== Compute the world matrix once since all parts of feet =========
+    u_world = m4.identity();
+    u_world = m4.translate(u_world, pos[0], pos[1], pos[2])
+    u_world = m4.translate(u_world, ...feet.offset);
+    u_world = m4.multiply(u_world, m4.yRotation(degToRad(rot[1])));
+
+
+    for (const { bufferInfo, material } of feet.p) {
+        webglUtils.setBuffersAndAttributes(gl, envProgramInfo, bufferInfo);
+        webglUtils.setUniforms(envProgramInfo, {
+            u_world,
+        }, material);
+        webglUtils.drawBufferInfo(gl, bufferInfo);
     }
-    console.log('Platform:')
-    console.log(platform)
-
-    let dataCoin = await loadObjParts(gl, coinUrl)
-    coin = {
-        p: dataCoin.p,
-        offset: dataCoin.offset,
-        r: dataCoin.r,
-    }
-    console.log('Coin:')
-    console.log(coin)
-
-    let dataObstacle = await loadObjParts(gl, obstacleUrl);
-    obstacle = {
-        p : dataObstacle.p,
-        offset: dataObstacle.offset,
-        r : dataObstacle.r,
-    }
-    console.log('Obstacle:')
-    console.log(obstacle)
-
-    let dataBody = await loadObjParts(gl, bodyUrl);
-    body = {
-        p: dataBody.p,
-        offset : dataBody.offset,
-        r : dataBody.r,
-    }
-
-    console.log('Body:')
-    console.log(body)
-
-    let dataFeet = await loadObjParts(gl, feetUrl);
-    feet = {
-        p : dataFeet.p,
-        offset: dataFeet.offset,
-        r : dataFeet.r,
-    }
-
-    console.log('Feet:')
-    console.log(feet)
 }
 
 /**
- * Select a different color for the jumpman
- * @param {*} gl is the WebGL context
- * @param {*} i is the index of the colored object wavefront
+ * 
  */
-async function selectColoredJumpman(gl, i) {
-    i = Math.abs(i) % startJumpmanUrls.length;
-    var data = jumpmans[i]
-    parts = data.p;
-    objOffset = data.offset;
-    range = data.r;
+function updateJumpmanMove() {
+    if(moveKey[0] == true)  { // a key
+        jumpmanPosition[0] -= speedMove;
+        jumpmanRotation[1] = 270;
+    }
+    if(moveKey[1] == true){ // w key
+        jumpmanPosition[2] -= speedMove;
+        jumpmanRotation[1] = 180;
+    } 
+    if(moveKey[2] == true) { // s key 
+        jumpmanPosition[2] += speedMove;
+        jumpmanRotation[1] = 0;
+    }
+    if(moveKey[3] == true)  { // d key
+        jumpmanPosition[0] += speedMove;
+        jumpmanRotation[1] = 90;
+    }
+
+    // combination of keys for rotation
+    if(moveKey[1] && moveKey[0]) jumpmanRotation[1] = 225;
+    if(moveKey[2] && moveKey[0]) jumpmanRotation[1] = 315;
+    if(moveKey[2] && moveKey[3]) jumpmanRotation[1] = 45;
+    if(moveKey[3] && moveKey[1]) jumpmanRotation[1] = 135;
 }
 
+// jumpmanPosition and jumpmanRotation
 
 /**
  * Reinitialize a new set of obstacles
  */
-function newObstacleDisposition(){
+function newObstacleDisposition() {
 
-    let position = getRandomInteger(0,4);
-    for(let j = 0; j < obstacleAppearance.length; j++){
+    let position = getRandomInteger(0, 4);
+    for (let j = 0; j < obstacleAppearance.length; j++) {
         obstacleAppearance[j] = true;
     }
-    obstacleAppearance[position] = false; 
+    obstacleAppearance[position] = false;
     // reset position
-    for(let i = 0; i<obstaclePosition.length; i++){
+    for (let i = 0; i < obstaclePosition.length; i++) {
         obstaclePosition[i][2] = (-1) * 24;
-    }    
+    }
 }
 
 /**
  * Update the z position on the world space for obstacles, simulating the movement in the player PoV. 
  * @param {*} time is the time frame used for the movement animation
  */
-function updateObstacles(time){
-    for(let i = 0; i < obstaclePosition.length; i++){
-        if(obstaclePosition[0][2] >= 24){
+function updateObstacles(time) {
+    for (let i = 0; i < obstaclePosition.length; i++) {
+        if (obstaclePosition[0][2] >= 24) {
             // last spot for the session movement
             console.log('Update obstacle Position')
             newObstacleDisposition();
@@ -378,8 +473,8 @@ function toggleListener(canvas) {
         canvas.onmouseup = (e) => { };
         canvas.onmouseout = (e) => { };
         canvas.onmousemove = (e) => { };
-        window.addEventListener('keydown', (e)=>{});
-        window.addEventListener('keyup', (e)=>{});
+        window.addEventListener('keydown', (e) => { });
+        window.addEventListener('keyup', (e) => { });
     }
     mouseToggle = !mouseToggle;
 }
@@ -453,7 +548,7 @@ async function runSelectCharScene() {
     // Skybox BufferInfo
     quadBufferInfo = createXYQuadBufferInfo(gl);
     // Loading Texture
-    if(!texture) texture = createSkyboxTexture(gl);
+    if (!texture) texture = createSkyboxTexture(gl);
 
 
     requestAnimationFrame(drawScene);
@@ -530,13 +625,15 @@ async function runSelectCharScene() {
     }
 }
 
-// ==========================
-//      Game Variables
-//          List
-// ==========================
 
 
 
+/*
+====================================
+        Main Function of the 
+          Game Scene 
+====================================
+*/
 /**
  * It manages the initial Game metadata
  * @param {*} gl 
@@ -567,8 +664,7 @@ function drawGameScene(time) {
     clearFrame(gl);
 
     // Update zoom and angle of camera 
-    if(zoomKey[0]) D += 1;
-    if(zoomKey[1]) D-= 1;
+    zoomUpdate()
 
     // redefine matrices 
     projectionMatrix =
@@ -616,20 +712,23 @@ function drawGameScene(time) {
 
     //draw platform 
     drawPlatform(gl, envProgramInfo, sharedUniforms, platform.p, platform.offset);
-    for(let i = 0; i < coinPosition.length; i++){
+    for (let i = 0; i < coinPosition.length; i++) {
         drawCoin(gl, envProgramInfo, sharedUniforms, coin.p, coin.offset, time, coinPosition[i][0], coinPosition[i][1], coinPosition[i][2]);
     }
 
     // update the obstales positions and appearances
-    updateObstacles(time); 
+    updateObstacles(time);
 
     // draw obstacles
-    for(let i = 0; i < obstaclePosition.length; i++){
-        if(obstacleAppearance[i])
-        drawObstacle(gl, envProgramInfo, sharedUniforms, obstacle.p, obstacle.offset, 0, obstaclePosition[i][0], obstaclePosition[i][1], obstaclePosition[i][2] );
+    for (let i = 0; i < obstaclePosition.length; i++) {
+        if (obstacleAppearance[i])
+            drawObstacle(gl, envProgramInfo, sharedUniforms, obstacle.p, obstacle.offset, 0, obstaclePosition[i][0], obstaclePosition[i][1], obstaclePosition[i][2]);
     }
 
-    drawGameJumpman(gl, envProgramInfo, sharedUniforms, body, feet, 0, jumpmanPosition);
+    // update the position of the jumpman according to the key pressed in the frame
+    updateJumpmanMove();
+
+    drawGameJumpman(gl, envProgramInfo, sharedUniforms, body, feet, jumpmanRotation, jumpmanPosition, jumpmanScale);
 
     // draw Skybox
     drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);
