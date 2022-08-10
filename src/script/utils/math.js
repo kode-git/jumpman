@@ -47,7 +47,25 @@ function getRandomInteger(min, max){
     return Math.floor(getRandomArbitrary(min, max));
 }
 
-
+/**
+ * Check if the value is between min and max
+ * @param {*} value is the value to check
+ * @param {*} min is the minimum value
+ * @param {*} max is the maximum value
+ * @returns 
+ */
 function isBetween(value, min, max){
     return value >= min && value <= max;
 }
+
+/**
+ * Calculate th distance between a point and a rectangle (from its minimum and maximum point)
+ * @param {*} rect is the rectangle
+ * @param {*} p is the point
+ * @returns the distance between p and rect
+ */
+function distance(rect, p) {
+    var dx = Math.max(rect.min.x - p.x, 0, p.x - rect.max.x);
+    var dy = Math.max(rect.min.y - p.y, 0, p.y - rect.max.y);
+    return Math.sqrt(dx*dx + dy*dy);
+  }
