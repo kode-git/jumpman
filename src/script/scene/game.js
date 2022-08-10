@@ -26,9 +26,13 @@ var quadBufferInfo; // SkyBox buffer
 var texture; // Skybox texture
 
 // Light 
-var colorLight = [1.0, 1.0, 1.0]; // white light
-var ambientLight = [0.2, 0.2, 0.2]; // ambient light
-var ambient, diffuse, specular, emissive, shininess, opacity;
+var ambientLight = [0.1, 0.1, 0.1]
+var lightPosition = [2, 7.0, 0, 0.0];
+var lightAmbient = [0.2, 0.2, 0.2]
+var lightDiffuse = [0.8, 0.8, 0.8];
+var lightSpecular = [1.0, 1.0, 1.0];
+var lightShiness = 10;
+
 
 // ========================================
 
@@ -43,10 +47,11 @@ var cameraPosition, cameraAngle, target, up;
 // Matrices
 var viewDirectionProjectionInverseMatrix, viewDirectionProjectionMatrix, worldMatrix, cameraMatrix, viewMatrix, projectionMatrix, viewDirectionMatrix;
 
-// Collision
+// Platform Collision
 var isPlatformCollision
 var platformCollision = [false, false, false, false];
 
+// Obstacles Collision
 
 // ========================================
 
@@ -66,6 +71,7 @@ const bodyUrl = 'src/models/gameBody/body.obj'
 const feetUrl = 'src/models/gameFeet/feet.obj'
 const feetRightUrl = 'src/models/gameFeet/rightFeet.obj'
 const feetLeftUrl = 'src/models/gameFeet/leftFeet.obj'
+const cloudUrl = 'src/models/platform/clouds.obj'
 
 // Colors of jumpman
 const colors = ['purple', 'orange', 'red', 'turquoise', 'green']
@@ -90,7 +96,10 @@ var rightFeet;
 var body;
 
 
-// initilize the jumpman position
+// platform transformation
+var platformTranslation = [2, -23.2, -7];
+
+// initilize the jumpman transformation values, feet offset, speed and side inclination
 var jumpmanPosition = [0, 0.5, 12] // feet level
 var jumpmanScale = [0.8, 0.8, 0.8] // scale body
 var jumpmanRotation = [0, 180, 0] // degree of rotation
@@ -206,6 +215,14 @@ async function initResource(gl) {
         r: dataLeftFeet.r,
     }
 
+    // clouds of the environment
+    let dataCloud = await loadObjParts(gl, cloudUrl);
+    cloud = {
+        p: dataCloud.p,
+        offset: dataCloud.offset,
+        r: dataCloud.r,
+    }
+
 }
 
 /**
@@ -281,6 +298,8 @@ function drawJumpman(gl, envProgramInfo, sharedUniforms, parts, objOffset, time)
  * Update zoom according to the key pressing
  */
 function zoomUpdate() {
+    if (zoomKey[0] && D == 5) return; // min zoom
+    if (zoomKey[1] && D == 20) return; // max zoom
     if (zoomKey[0]) D += 1;
     if (zoomKey[1]) D -= 1;
 }
@@ -294,13 +313,14 @@ function zoomUpdate() {
  * @param {*} parts is parts of the object
  * @param {*} objOffset is the offset of the object
  */
-function drawPlatform(gl, envProgramInfo, sharedUniforms, parts, objOffset) {
+function drawPlatform(gl, envProgramInfo, sharedUniforms, parts, objOffset, translation) {
     gl.depthFunc(gl.LESS);  // use the default depth test
     gl.useProgram(envProgramInfo.program);
     webglUtils.setUniforms(envProgramInfo, sharedUniforms);
 
     // =========== Compute the world matrix once since all parts =========
     let u_world = m4.identity();
+    u_world = m4.translate(u_world, ...translation)
     u_world = m4.translate(u_world, ...objOffset);
     for (const { bufferInfo, material } of parts) {
         webglUtils.setBuffersAndAttributes(gl, envProgramInfo, bufferInfo);
@@ -465,6 +485,31 @@ function drawFeet(gl, envProgramInfo, sharedUniforms, feet, rot, pos, type) {
     }
 }
 
+/**
+ * Draw clouds of the environment
+ * @param {*} gl is the WebGL context
+ * @param {*} envProgramInfo is the GLSL program
+ * @param {*} sharedUniforms is shared uniforms
+ * @param {*} cloud is the cloud object instance
+ * @param {*} traslate is the translation transformation
+ */
+function drawCloud(gl, envProgramInfo, sharedUniforms, cloud, translate) {
+    gl.depthFunc(gl.LESS);  // use the default depth test
+    gl.useProgram(envProgramInfo.program);
+    webglUtils.setUniforms(envProgramInfo, sharedUniforms);
+
+    // =========== Compute the world matrix once since all parts =========
+    let u_world = m4.identity();
+    u_world = m4.translate(u_world, ...cloud.offset);
+    u_world = m4.translate(u_world, ...translate)
+    for (const { bufferInfo, material } of cloud.p) {
+        webglUtils.setBuffersAndAttributes(gl, envProgramInfo, bufferInfo);
+        webglUtils.setUniforms(envProgramInfo, {
+            u_world,
+        }, material);
+        webglUtils.drawBufferInfo(gl, bufferInfo);
+    }
+}
 /**
  * update the step movement animation with refresh reduction due to the high frame updating
  * @param {*} time 
@@ -681,34 +726,34 @@ function checkPlatformCollisions() {
  */
 function checkCoinCollision() {
     let fullCoin = true;
-    for (let i = 0; i < coinPosition.length; i++){
-       if(Math.hypot(jumpmanPosition[0] - coinPosition[i][0], jumpmanPosition[2] - coinPosition[i][2]) < 1){ // euclidean distance 
-        if(!coinHit[i]){ // if it is already taken, don't count
-            coinHit[i] = true;
-            coinPoint++;
-        }       
-       } else{
-        if(!coinHit[i]) // not hit yet
-        fullCoin = false; // some coin are not yet taken
-       }
+    for (let i = 0; i < coinPosition.length; i++) {
+        if (Math.hypot(jumpmanPosition[0] - coinPosition[i][0], jumpmanPosition[2] - coinPosition[i][2]) < 1) { // euclidean distance 
+            if (!coinHit[i]) { // if it is already taken, don't count
+                coinHit[i] = true;
+                coinPoint++;
+            }
+        } else {
+            if (!coinHit[i]) // not hit yet
+                fullCoin = false; // some coin are not yet taken
+        }
     }
 
-    if(fullCoin){
+    if (fullCoin) {
         generateRandomCoin(5);
     }
-       
+
 }
 
 /**
  * Generate n random coin on the platform coordinates
  * @param {number} n is the number of random coin to generate 
  */
-function generateRandomCoin(n){
+function generateRandomCoin(n) {
     var coins = []
-    for(let i = 0; i < n; i++){
+    for (let i = 0; i < n; i++) {
         coins.push([
             getRandomArbitrary(-10, 13),
-            1.5, 
+            1.5,
             getRandomArbitrary(-23, 20.30)
         ])
     }
@@ -944,12 +989,20 @@ function drawGameScene(time) {
         m4.inverse(viewDirectionProjectionMatrix);
 
 
+    // Light
+
+
     // update sharedUniforms for the platform
     sharedUniforms = {
         u_lightDirection: m4.normalize([0, 0.2, 0]), // direction of the source light
         u_view: viewMatrix,
         u_projection: projectionMatrix,
         u_viewWorldPosition: cameraPosition,
+        ambient: lightAmbient,
+        diffuse: lightDiffuse,
+        specular: lightSpecular,
+        u_ambientLight: ambientLight,
+        shiness: 1000,
     };
 
 
@@ -963,7 +1016,7 @@ function drawGameScene(time) {
 
 
     //draw platform 
-    drawPlatform(gl, envProgramInfo, sharedUniforms, platform.p, platform.offset);
+    drawPlatform(gl, envProgramInfo, sharedUniforms, platform.p, platform.offset, platformTranslation);
     for (let i = 0; i < coinPosition.length; i++) {
         if (!coinHit[i])
             drawCoin(gl, envProgramInfo, sharedUniforms, coin.p, coin.offset, time, coinPosition[i][0], coinPosition[i][1], coinPosition[i][2]);
@@ -993,6 +1046,22 @@ function drawGameScene(time) {
 
     // draw Skybox
     drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);
+
+
+    // changing uniforms for the cloud light
+
+    sharedUniforms = {
+        u_lightDirection: m4.normalize([0, 0.2, 0]), // direction of the source light
+        u_view: viewMatrix,
+        u_projection: projectionMatrix,
+        u_viewWorldPosition: cameraPosition,
+        ambient: [0.8, 0.8, 0.8],
+        diffuse: [1, 1, 1],
+        specular: [1, 1, 1],
+        u_ambientLight: [0.4, 0.4, 0.4],
+        shiness: 10,
+    };
+    drawCloud(gl, envProgramInfo, sharedUniforms, cloud, platformTranslation)
 
     // animation frame iteration
     requestAnimationFrame(drawGameScene)
