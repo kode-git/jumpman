@@ -46,3 +46,8 @@ function getRandomArbitrary(min, max) {
 function getRandomInteger(min, max){
     return Math.floor(getRandomArbitrary(min, max));
 }
+
+
+function isBetween(value, min, max){
+    return value >= min && value <= max;
+}

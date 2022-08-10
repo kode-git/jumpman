@@ -43,6 +43,11 @@ var cameraPosition, cameraAngle, target, up;
 // Matrices
 var viewDirectionProjectionInverseMatrix, viewDirectionProjectionMatrix, worldMatrix, cameraMatrix, viewMatrix, projectionMatrix, viewDirectionMatrix;
 
+// Collision
+var isPlatformCollision
+var platformCollision = [false, false, false, false];
+
+
 // ========================================
 
 // ======== Resource Urls ===========
@@ -107,7 +112,7 @@ var leftStep = [0, 0, 0]
 
 // previous step status and animation time
 var wasBehind = true;
-var stepTime; 
+var stepTime;
 
 // initialize the coin positions
 const coinPosition = [[0, 1.5, 0], [-5, 1.5, -3], [4, 1.5, -9], [10, 1.5, -7], [4, 1.5, 4]]
@@ -464,9 +469,10 @@ function drawFeet(gl, envProgramInfo, sharedUniforms, feet, rot, pos, type) {
  * @param {*} time 
  */
 function updateStep(time) {
-    if(!stepTime) stepTime = 0;
+    if (!stepTime) stepTime = 0;
     let shift = Math.abs(time - stepTime);
     if (isMove && Math.abs(time - stepTime) >= 0.05) {
+
         stepTime = time;
         switch (feetLeftState) {
             case 0:
@@ -504,7 +510,7 @@ function updateStep(time) {
 
         // the right feet has the same movement but with the opposite order (behind-ahead, ahead-behind)
         switch (feetRightState) {
-            case 0: 
+            case 0:
                 {
                     feetRightState = 1;
                     rightRot[0] = 340;
@@ -535,16 +541,16 @@ function updateStep(time) {
                 break;
         }
     } else {
-        if(shift >= 0.05){
-        // it is not move, so... we need to let the jumpman stay in the on position state for both feets
-        leftRot[0] = 0;
-        rightRot[0] = 0;
-        leftStep[2] = 0;
-        rightStep[2] = 0;
-        bodySide[2] = 0;
-        feetLeftState = 1;
-        feetLeftState = 1
-        wasBehind = false; // restart from the left behind and right ahead
+        if (shift >= 0.05) {
+            // it is not move, so... we need to let the jumpman stay in the on position state for both feets
+            leftRot[0] = 0;
+            rightRot[0] = 0;
+            leftStep[2] = 0;
+            rightStep[2] = 0;
+            bodySide[2] = 0;
+            feetLeftState = 1;
+            feetLeftState = 1
+            wasBehind = false; // restart from the left behind and right ahead
         }
     }
 }
@@ -552,29 +558,36 @@ function updateStep(time) {
  * 
  */
 function updateJumpmanMove(time) {
-    if (moveKey[0] == true) { // a key
-        jumpmanPosition[0] -= speedMove;
-        jumpmanRotation[1] = 270;
-    }
-    if (moveKey[1] == true) { // w key
-        jumpmanPosition[2] -= speedMove;
-        jumpmanRotation[1] = 180;
-    }
-    if (moveKey[2] == true) { // s key 
-        jumpmanPosition[2] += speedMove;
-        jumpmanRotation[1] = 0;
-    }
-    if (moveKey[3] == true) { // d key
-        jumpmanPosition[0] += speedMove;
-        jumpmanRotation[1] = 90;
+    if (isPlatformCollision) {
+        isPlatformCollision = false;
+
+
+    } else {
+        if (moveKey[0] == true) { // a key
+            jumpmanPosition[0] -= speedMove;
+            jumpmanRotation[1] = 270;
+        }
+        if (moveKey[1] == true) { // w key
+            jumpmanPosition[2] -= speedMove;
+            jumpmanRotation[1] = 180;
+        }
+        if (moveKey[2] == true) { // s key 
+            jumpmanPosition[2] += speedMove;
+            jumpmanRotation[1] = 0;
+        }
+        if (moveKey[3] == true) { // d key
+            jumpmanPosition[0] += speedMove;
+            jumpmanRotation[1] = 90;
+        }
+
+        // combination of keys for rotation
+        if (moveKey[1] && moveKey[0]) jumpmanRotation[1] = 225;
+        if (moveKey[2] && moveKey[0]) jumpmanRotation[1] = 315;
+        if (moveKey[2] && moveKey[3]) jumpmanRotation[1] = 45;
+        if (moveKey[3] && moveKey[1]) jumpmanRotation[1] = 135;
+
     }
 
-    // combination of keys for rotation
-    if (moveKey[1] && moveKey[0]) jumpmanRotation[1] = 225;
-    if (moveKey[2] && moveKey[0]) jumpmanRotation[1] = 315;
-    if (moveKey[2] && moveKey[3]) jumpmanRotation[1] = 45;
-    if (moveKey[3] && moveKey[1]) jumpmanRotation[1] = 135;
-   
 
 }
 
@@ -629,6 +642,35 @@ function toggleListener(canvas) {
         window.addEventListener('keyup', (e) => { });
     }
     mouseToggle = !mouseToggle;
+}
+
+
+function checkCollisions() {
+    // platform collision with limits (min, max) for the x and z
+    var platformLimits = [[-12.39, 13.49], [-23.60, 20.30]]
+    if (isBetween(jumpmanPosition[0], platformLimits[0][0], platformLimits[0][1]) && isBetween(jumpmanPosition[2], platformLimits[1][0], platformLimits[1][1])) {
+        // no collision
+
+    } else {
+        // platform collision
+
+        // collision is vertical
+        if (jumpmanPosition[2] <= platformLimits[1][0]) {
+            // platform top collision
+            jumpmanPosition[2] += 0.1;
+        }
+        if (jumpmanPosition[2] >= platformLimits[1][1])
+            jumpmanPosition[2] -= 0.1;
+
+
+        // collision is horizontal
+        if (jumpmanPosition[0] <= platformLimits[0][0]) {
+            jumpmanPosition[0] += 0.1;
+        }
+        if (jumpmanPosition[0] >= platformLimits[0][1]) {
+            jumpmanPosition[0] -= 0.1
+        }
+    }
 }
 
 /*
@@ -884,8 +926,8 @@ function drawGameScene(time) {
             drawObstacle(gl, envProgramInfo, sharedUniforms, obstacle.p, obstacle.offset, 0, obstaclePosition[i][0], obstaclePosition[i][1], obstaclePosition[i][2]);
     }
 
-    // update the position of the jumpman according to the key pressed in the frame
 
+    // update the position of the jumpman according to the key pressed in the frame
     // draw body of the Jumpman
     updateJumpmanMove(time); // for the general movement according to the world
     updateStep(time)
@@ -893,11 +935,12 @@ function drawGameScene(time) {
     // draw Jumpman body
     drawGameJumpman(gl, envProgramInfo, sharedUniforms, body, feet, jumpmanRotation, jumpmanPosition, jumpmanScale);
 
-
     // draw feets of the Jumpman according to the step orientation and body position
     drawFeet(gl, envProgramInfo, sharedUniforms, rightFeet, jumpmanRotation, jumpmanPosition, 1);
     drawFeet(gl, envProgramInfo, sharedUniforms, leftFeet, jumpmanRotation, jumpmanPosition, 0);
 
+    // check collision
+    checkCollisions();
 
     // draw Skybox
     drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);
