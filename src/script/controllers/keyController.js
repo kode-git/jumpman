@@ -3,12 +3,13 @@
 // Zoom keys
 var zoomKey = [false, false];
 var moveKey = [false, false, false, false]; // a w s d 
+var isMove = false;
 /**
  * Listener when a key is release
  * @param {*} e 
  */
 var keyUp = function(e){
-    console.log('Key Up')
+    isMove = false;
     if(e.keyCode == 38) zoomKey[0] = true; // arrow up
     if(e.keyCode == 40) zoomKey[1] = true; // arrow down
     if(e.keyCode == 65) moveKey[0] = false; // a key
@@ -22,7 +23,7 @@ var keyUp = function(e){
  * @param {*} e 
  */
 var keyDown = function(e){
-    console.log('Key Down')
+    isMove = true;    
     if(e.keyCode == 38) zoomKey[0] = false; // arrow up
     if(e.keyCode == 40) zoomKey[1] = false; // arrow down
     if(e.keyCode == 65) moveKey[0] = true; // a key

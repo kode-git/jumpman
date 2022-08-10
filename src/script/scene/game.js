@@ -36,6 +36,7 @@ var ambient, diffuse, specular, emissive, shininess, opacity;
 var fieldOfViewRadians = degToRad(80);
 var aspect;
 var deltaTime, then = 0;
+
 // Camera 
 var cameraPosition, cameraAngle, target, up;
 
@@ -89,7 +90,24 @@ var jumpmanPosition = [0, 0.5, 12] // feet level
 var jumpmanScale = [0.8, 0.8, 0.8] // scale body
 var jumpmanRotation = [0, 180, 0] // degree of rotation
 const feetOffset = 2.1 // feet offset for the body level on y axe
-var speedMove = 0.1;
+var speedMove = 0.1; // speed movement
+var bodySide = [0, 0, 0] // side inclination for the animation during movement
+
+// step variables
+var feetRightState; // 0 for behind, 1 for on position and 2 ahead
+var feetLeftState; // 0 for behind, 1 for on position and 2 ahead
+
+// rotation for behind, on position and ahead on 3 axes
+var rightRot = [0, 0, 0]
+var leftRot = [0, 0, 0]
+
+// behind, on position and ahead applied on 3 axes
+var rightStep = [0, 0, 0]
+var leftStep = [0, 0, 0]
+
+// previous step status and animation time
+var wasBehind = true;
+var stepTime; 
 
 // initialize the coin positions
 const coinPosition = [[0, 1.5, 0], [-5, 1.5, -3], [4, 1.5, -9], [10, 1.5, -7], [4, 1.5, 4]]
@@ -110,10 +128,6 @@ var obstacleSpeed = 0.0014;
 
 // Event management
 var mouseToggle = true;
-
-// index and oldIndex are in the buttonsControllers.js
-// var indexTexture = 0; // index of the wavefront object to load
-// var oldIndex; 
 
 /*
 ====================================
@@ -136,8 +150,6 @@ async function initResource(gl) {
             offset: data.offset,
             r: data.r,
         })
-        console.log('Jumpman ' + i)
-        console.log(jumpmans[i])
     }
 
     // Loading platform model
@@ -147,27 +159,24 @@ async function initResource(gl) {
         offset: data.offset,
         r: data.r,
     }
-    console.log('Platform:')
-    console.log(platform)
 
+    // loading coin model
     let dataCoin = await loadObjParts(gl, coinUrl)
     coin = {
         p: dataCoin.p,
         offset: dataCoin.offset,
         r: dataCoin.r,
     }
-    console.log('Coin:')
-    console.log(coin)
 
+    // loading obstacle model
     let dataObstacle = await loadObjParts(gl, obstacleUrl);
     obstacle = {
         p: dataObstacle.p,
         offset: dataObstacle.offset,
         r: dataObstacle.r,
     }
-    console.log('Obstacle:')
-    console.log(obstacle)
 
+    // loading game jumpman body
     let dataBody = await loadObjParts(gl, bodyUrl);
     body = {
         p: dataBody.p,
@@ -175,16 +184,7 @@ async function initResource(gl) {
         r: dataBody.r,
     }
 
-    console.log('Body:')
-    console.log(body)
-
-    let dataFeet = await loadObjParts(gl, feetUrl);
-    feet = {
-        p: dataFeet.p,
-        offset: dataFeet.offset,
-        r: dataFeet.r,
-    }
-
+    // loading right feet of the game jumpman
     let dataRightFeet = await loadObjParts(gl, feetRightUrl);
     rightFeet = {
         p: dataRightFeet.p,
@@ -192,6 +192,7 @@ async function initResource(gl) {
         r: dataRightFeet.r,
     }
 
+    // loading the left feet of the game jumpman
     let dataLeftFeet = await loadObjParts(gl, feetLeftUrl);
     leftFeet = {
         p: dataLeftFeet.p,
@@ -199,8 +200,6 @@ async function initResource(gl) {
         r: dataLeftFeet.r,
     }
 
-    console.log('Feet:')
-    console.log(feet)
 }
 
 /**
@@ -370,6 +369,17 @@ function drawObstacle(gl, envProgramInfo, sharedUniforms, parts, objOffset, y, t
 }
 
 
+/**
+ * draw the body of the jumpman
+ * @param {*} gl is the WebGL context
+ * @param {*} envProgramInfo is the GLSL program
+ * @param {*} sharedUniforms is the uniform values
+ * @param {*} body is the body object of the jumpman
+ * @param {*} feet is the feet values
+ * @param {*} rot is the rotation vector
+ * @param {*} pos is the translation vector
+ * @param {*} scale is the scale vector
+ */
 function drawGameJumpman(gl, envProgramInfo, sharedUniforms, body, feet, rot, pos, scale) {
     gl.depthFunc(gl.LESS);  // use the default depth test
     gl.useProgram(envProgramInfo.program);
@@ -385,6 +395,7 @@ function drawGameJumpman(gl, envProgramInfo, sharedUniforms, body, feet, rot, po
     u_world = m4.translate(u_world, ...body.offset);
     u_world = m4.scale(u_world, scale[0], scale[1], scale[2])
     u_world = m4.multiply(u_world, m4.yRotation(degToRad(rot[1])));
+    u_world = m4.multiply(u_world, m4.zRotation(degToRad(bodySide[2])))
 
 
     for (const { bufferInfo, material } of body.p) {
@@ -400,16 +411,27 @@ function drawGameJumpman(gl, envProgramInfo, sharedUniforms, body, feet, rot, po
 }
 
 
-function drawFeet(gl, envProgramInfo, sharedUniforms, feet, rot, pos, type){
+/**
+ * draw right or left feet according to the position of the body
+ * @param {*} gl is the WebGL context
+ * @param {*} envProgramInfo is the GLSL program
+ * @param {*} sharedUniforms is the uniforms values
+ * @param {*} feet is the feet object
+ * @param {*} rot is the rotation transformation
+ * @param {*} pos is the translation transformation
+ * @param {*} type is the type of feet (1 for right, 0 for left)
+ */
+function drawFeet(gl, envProgramInfo, sharedUniforms, feet, rot, pos, type) {
     gl.depthFunc(gl.LESS);  // use the default depth test
     gl.useProgram(envProgramInfo.program);
     webglUtils.setUniforms(envProgramInfo, sharedUniforms);
 
+    // offset from the body position
     let dispose = [0, 0, 0]
-    if (type) {
-        dispose[0] -= 0.4;
-    } else {
-        dispose[0] += 0.4;
+    if (type) { // right feet
+        dispose[0] -= 0.45;
+    } else { // left feet
+        dispose[0] += 0.45;
     }
 
     // =========== Compute the world matrix once since all parts of body =========
@@ -418,6 +440,14 @@ function drawFeet(gl, envProgramInfo, sharedUniforms, feet, rot, pos, type){
     u_world = m4.translate(u_world, ...feet.offset);
     u_world = m4.translate(u_world, ...dispose)
     u_world = m4.multiply(u_world, m4.yRotation(degToRad(rot[1])));
+    if (type) {
+        u_world = m4.translate(u_world, ...rightStep);
+        u_world = m4.multiply(u_world, m4.xRotation(degToRad(rightRot[0])))
+    } else {
+        u_world = m4.translate(u_world, ...leftStep);
+        u_world = m4.multiply(u_world, m4.xRotation(degToRad(leftRot[0])))
+    }
+
 
 
     for (const { bufferInfo, material } of feet.p) {
@@ -430,9 +460,98 @@ function drawFeet(gl, envProgramInfo, sharedUniforms, feet, rot, pos, type){
 }
 
 /**
+ * update the step movement animation with refresh reduction due to the high frame updating
+ * @param {*} time 
+ */
+function updateStep(time) {
+    if(!stepTime) stepTime = 0;
+    let shift = Math.abs(time - stepTime);
+    if (isMove && Math.abs(time - stepTime) >= 0.05) {
+        stepTime = time;
+        switch (feetLeftState) {
+            case 0:
+                {
+                    feetLeftState = 1;
+                    wasBehind = true;
+                    leftRot[0] = 340;
+                    leftStep[2] = 0.1;
+                    bodySide[2] = -5;
+                }
+                break;
+            case 1:
+                {
+                    if (wasBehind) {
+                        feetLeftState = 2;
+                    } else feetLeftState = 0;
+                    leftRot[0] = 0;
+                    leftStep[2] = 0;
+                    bodySide[2] = 0;
+                }
+                break;
+            case 2:
+                {
+                    wasBehind = false;
+                    feetLeftState = 1;
+                    leftRot[0] = 20;
+                    leftStep[2] = -0.2
+                    leftStep[0] = 0.1;
+                    bodySide[2] = 5;
+                }
+                break;
+            default:
+                break;
+        }
+
+        // the right feet has the same movement but with the opposite order (behind-ahead, ahead-behind)
+        switch (feetRightState) {
+            case 0: 
+                {
+                    feetRightState = 1;
+                    rightRot[0] = 340;
+                    rightStep[2] = 0.2;
+                    rightStep[1] = 0.1;
+                }
+                break;
+            case 1:
+                {
+                    if (wasBehind) {
+                        feetRightState = 0;
+                    } else feetRightState = 2;
+                    rightRot[0] = 0;
+                    rightStep[2] = 0;
+                    rightStep[1] = 0;
+                }
+                break;
+            case 2:
+                {
+                    feetRightState = 1;
+                    rightRot[0] = 20;
+                    rightStep[2] = -0.2;
+                    rightStep[1] = 0.1;
+
+                }
+                break;
+            default:
+                break;
+        }
+    } else {
+        if(shift >= 0.05){
+        // it is not move, so... we need to let the jumpman stay in the on position state for both feets
+        leftRot[0] = 0;
+        rightRot[0] = 0;
+        leftStep[2] = 0;
+        rightStep[2] = 0;
+        bodySide[2] = 0;
+        feetLeftState = 1;
+        feetLeftState = 1
+        wasBehind = false; // restart from the left behind and right ahead
+        }
+    }
+}
+/**
  * 
  */
-function updateJumpmanMove() {
+function updateJumpmanMove(time) {
     if (moveKey[0] == true) { // a key
         jumpmanPosition[0] -= speedMove;
         jumpmanRotation[1] = 270;
@@ -455,9 +574,10 @@ function updateJumpmanMove() {
     if (moveKey[2] && moveKey[0]) jumpmanRotation[1] = 315;
     if (moveKey[2] && moveKey[3]) jumpmanRotation[1] = 45;
     if (moveKey[3] && moveKey[1]) jumpmanRotation[1] = 135;
+   
+
 }
 
-// jumpmanPosition and jumpmanRotation
 
 /**
  * Reinitialize a new set of obstacles
@@ -483,11 +603,9 @@ function updateObstacles(time) {
     for (let i = 0; i < obstaclePosition.length; i++) {
         if (obstaclePosition[0][2] >= 24) {
             // last spot for the session movement
-            console.log('Update obstacle Position')
             newObstacleDisposition();
         } else obstaclePosition[i][2] += 0.1 // z update for obstacle i
     }
-    console.log(obstaclePosition[0][2])
 }
 
 /**
@@ -674,11 +792,16 @@ async function runSelectCharScene() {
  */
 function initGameScene(gl) {
     if (canvas) toggleListener(canvas)
+    // initial camera positioon
     D = 20;
     theta = degToRad(90);
     phi = degToRad(45);
     cameraAngle = degToRad(0)
+    // reinitialize the then and deltaTime to separate animation from the starting scene
     deltaTime, then = 0;
+    // on position step
+    feetLeftState = 1;
+    feetRightState = 1;
 }
 
 
@@ -699,6 +822,8 @@ function drawGameScene(time) {
 
     // Update zoom and angle of camera 
     zoomUpdate()
+
+
 
     // redefine matrices 
     projectionMatrix =
@@ -760,12 +885,20 @@ function drawGameScene(time) {
     }
 
     // update the position of the jumpman according to the key pressed in the frame
-    updateJumpmanMove();
 
+    // draw body of the Jumpman
+    updateJumpmanMove(time); // for the general movement according to the world
+    updateStep(time)
+
+    // draw Jumpman body
     drawGameJumpman(gl, envProgramInfo, sharedUniforms, body, feet, jumpmanRotation, jumpmanPosition, jumpmanScale);
 
+
+    // draw feets of the Jumpman according to the step orientation and body position
     drawFeet(gl, envProgramInfo, sharedUniforms, rightFeet, jumpmanRotation, jumpmanPosition, 1);
     drawFeet(gl, envProgramInfo, sharedUniforms, leftFeet, jumpmanRotation, jumpmanPosition, 0);
+
+
     // draw Skybox
     drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);
 
@@ -786,7 +919,7 @@ function startGameScene() {
 
     // modify metadata
     initGameScene(gl);
-    // draw Game Scene
+
     requestAnimationFrame(drawGameScene);
 }
 // Load Scene on loading state
