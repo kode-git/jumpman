@@ -114,9 +114,10 @@ var leftStep = [0, 0, 0]
 var wasBehind = true;
 var stepTime;
 
-// initialize the coin positions
-const coinPosition = [[0, 1.5, 0], [-5, 1.5, -3], [4, 1.5, -9], [10, 1.5, -7], [4, 1.5, 4]]
-
+// initialize the coin positions, hit status and coin points.
+var coinPosition = [[0, 1.5, 0], [-5, 1.5, -3], [4, 1.5, -9], [10, 1.5, -7], [4, 1.5, 4]]
+var coinHit = [false, false, false, false, false]
+var coinPoint = 0;
 // =========== Obstacles Variables ============
 // initialize the starting 
 var obstaclePosition = [
@@ -471,7 +472,7 @@ function drawFeet(gl, envProgramInfo, sharedUniforms, feet, rot, pos, type) {
 function updateStep(time) {
     if (!stepTime) stepTime = 0;
     let shift = Math.abs(time - stepTime);
-    if (isMove && Math.abs(time - stepTime) >= 0.05) {
+    if ((moveKey[0] || moveKey[1] || moveKey[2] || moveKey[3]) && Math.abs(time - stepTime) >= 0.05) {
 
         stepTime = time;
         switch (feetLeftState) {
@@ -560,8 +561,6 @@ function updateStep(time) {
 function updateJumpmanMove(time) {
     if (isPlatformCollision) {
         isPlatformCollision = false;
-
-
     } else {
         if (moveKey[0] == true) { // a key
             jumpmanPosition[0] -= speedMove;
@@ -645,7 +644,10 @@ function toggleListener(canvas) {
 }
 
 
-function checkCollisions() {
+/**
+ * Check if the Jumpman go out of platform bounds
+ */
+function checkPlatformCollisions() {
     // platform collision with limits (min, max) for the x and z
     var platformLimits = [[-12.39, 13.49], [-23.60, 20.30]]
     if (isBetween(jumpmanPosition[0], platformLimits[0][0], platformLimits[0][1]) && isBetween(jumpmanPosition[2], platformLimits[1][0], platformLimits[1][1])) {
@@ -672,6 +674,48 @@ function checkCollisions() {
         }
     }
 }
+
+
+/**
+ * Check if the Jumpman hit some coin
+ */
+function checkCoinCollision() {
+    let fullCoin = true;
+    for (let i = 0; i < coinPosition.length; i++){
+       if(Math.hypot(jumpmanPosition[0] - coinPosition[i][0], jumpmanPosition[2] - coinPosition[i][2]) < 1){ // euclidean distance 
+        if(!coinHit[i]){ // if it is already taken, don't count
+            coinHit[i] = true;
+            coinPoint++;
+        }       
+       } else{
+        if(!coinHit[i]) // not hit yet
+        fullCoin = false; // some coin are not yet taken
+       }
+    }
+
+    if(fullCoin){
+        generateRandomCoin(5);
+    }
+       
+}
+
+/**
+ * Generate n random coin on the platform coordinates
+ * @param {number} n is the number of random coin to generate 
+ */
+function generateRandomCoin(n){
+    var coins = []
+    for(let i = 0; i < n; i++){
+        coins.push([
+            getRandomArbitrary(-10, 13),
+            1.5, 
+            getRandomArbitrary(-23, 20.30)
+        ])
+    }
+    coinPosition = coins;
+    coinHit = [false, false, false, false, false]
+}
+
 
 /*
 ====================================
@@ -909,12 +953,20 @@ function drawGameScene(time) {
     };
 
 
+    // ======== Collisions ===========
+
+    // check pltform collision
+    checkPlatformCollisions();
+
+    // coin collision
+    checkCoinCollision();
 
 
     //draw platform 
     drawPlatform(gl, envProgramInfo, sharedUniforms, platform.p, platform.offset);
     for (let i = 0; i < coinPosition.length; i++) {
-        drawCoin(gl, envProgramInfo, sharedUniforms, coin.p, coin.offset, time, coinPosition[i][0], coinPosition[i][1], coinPosition[i][2]);
+        if (!coinHit[i])
+            drawCoin(gl, envProgramInfo, sharedUniforms, coin.p, coin.offset, time, coinPosition[i][0], coinPosition[i][1], coinPosition[i][2]);
     }
 
     // update the obstales positions and appearances
@@ -938,9 +990,6 @@ function drawGameScene(time) {
     // draw feets of the Jumpman according to the step orientation and body position
     drawFeet(gl, envProgramInfo, sharedUniforms, rightFeet, jumpmanRotation, jumpmanPosition, 1);
     drawFeet(gl, envProgramInfo, sharedUniforms, leftFeet, jumpmanRotation, jumpmanPosition, 0);
-
-    // check collision
-    checkCollisions();
 
     // draw Skybox
     drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);

@@ -3,7 +3,7 @@
 // Zoom keys
 var zoomKey = [false, false];
 var moveKey = [false, false, false, false]; // a w s d 
-var isMove = false;
+var isMove = [false, false, false, false]
 /**
  * Listener when a key is release
  * @param {*} e 
