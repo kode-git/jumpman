@@ -32,7 +32,7 @@ var lightPosition = [2, 7.0, 0, 0.0];
 var lightAmbient = [0.2, 0.2, 0.2]
 var lightDiffuse = [0.8, 0.8, 0.8];
 var lightSpecular = [1.0, 1.0, 1.0];
-var lightShiness = 10;
+var lightShiness = 120;
 
 // Shadow 
 var depthFramebuffer, depthTexture, unusedTexture;
@@ -61,20 +61,23 @@ var platformCollision = [false, false, false, false];
 // ======== Resource Urls ===========
 
 // Starting Jumpman references
-const startJumpmanUrls = [
-    'src/models/jumpman/purple_baseline.obj',
-    'src/models/jumpman/orange_baseline.obj',
-    'src/models/jumpman/start_baseline.obj',
-    'src/models/jumpman/turquoise_baseline.obj',
-    'src/models/jumpman/green_baseline.obj',
-];
+const startJumpmanUrl = 'src/models/jumpman/start_baseline.obj';
+
 
 // Game Jumpman
 const bodyUrl = 'src/models/gameBody/body.obj'
 const feetUrl = 'src/models/gameFeet/feet.obj'
 const feetRightUrl = 'src/models/gameFeet/rightFeet.obj'
 const feetLeftUrl = 'src/models/gameFeet/leftFeet.obj'
+
+// cloud
 const cloudUrl = 'src/models/platform/clouds.obj'
+
+// drone
+const droneUrl = 'src/models/drone/drone.obj'
+const propellerUrl = 'src/models/drone/propeller.obj'
+var upDown = 4; // is upDown value for the vertical ondulation
+var verse = false; // negative = false, positive = true
 
 // Colors of jumpman
 const colors = ['purple', 'orange', 'red', 'turquoise', 'green']
@@ -97,6 +100,8 @@ var feet;
 var leftFeet;
 var rightFeet;
 var body;
+var drone;
+var propeller;
 
 
 // platform transformation
@@ -137,6 +142,7 @@ var invulnerability; // when the jumpman lose a life, it is invulnerable for 3 s
 var coinPoint = 0;
 var life = 5;
 
+
 // =========== Obstacles Variables ============
 // initialize the starting 
 var obstaclePosition = [
@@ -167,22 +173,20 @@ var mouseToggle = true;
  * @param {*} gl 
  */
 async function initResource(gl) {
+    
     // Loading of jumpmans models
-    for (let i = 0; i < startJumpmanUrls.length; i++) {
-        let data = await loadObjParts(gl, startJumpmanUrls[i]);
-        jumpmans.push({
-            p: data.p,
-            offset: data.offset,
-            r: data.r,
-        })
-    }
+    let dataJump = await loadObjParts(gl, startJumpmanUrl);
+    parts = dataJump.p;
+    objOffset = dataJump.offset;
+    range = dataJump.r;
+
 
     // Loading platform model
-    let data = await loadObjParts(gl, platformUrl)
+    let dataPlat = await loadObjParts(gl, platformUrl)
     platform = {
-        p: data.p,
-        offset: data.offset,
-        r: data.r,
+        p: dataPlat.p,
+        offset: dataPlat.offset,
+        r: dataPlat.r,
     }
 
     // loading coin model
@@ -200,6 +204,7 @@ async function initResource(gl) {
         offset: dataObstacle.offset,
         r: dataObstacle.r,
     }
+
 
     // loading game jumpman body
     let dataBody = await loadObjParts(gl, bodyUrl);
@@ -231,6 +236,20 @@ async function initResource(gl) {
         p: dataCloud.p,
         offset: dataCloud.offset,
         r: dataCloud.r,
+    }
+
+    let dataDrone = await loadObjParts(gl, droneUrl);
+    drone = {
+        p: dataDrone.p,
+        offset: dataDrone.offset,
+        r: dataDrone.r,
+    }
+
+    let dataPropeller = await loadObjParts(gl, propellerUrl);
+    propeller = {
+        p: dataPropeller.p,
+        offset: dataPropeller.offset,
+        r: dataPropeller.r,
     }
 
 }
@@ -294,18 +313,7 @@ function textureSetting() {
         0);                    // mip level
 }
 
-/**
- * Select a different color for the jumpman
- * @param {*} gl is the WebGL context
- * @param {*} i is the index of the colored object wavefront
- */
-async function selectColoredJumpman(gl, i) {
-    i = Math.abs(i) % startJumpmanUrls.length;
-    var data = jumpmans[i]
-    parts = data.p;
-    objOffset = data.offset;
-    range = data.r;
-}
+
 
 
 
@@ -352,6 +360,55 @@ function drawJumpman(gl, envProgramInfo, sharedUniforms, parts, objOffset, time)
         }, material);
         webglUtils.drawBufferInfo(gl, bufferInfo);
     }
+}
+
+function drawDrone(gl, envProgramInfo, sharedUniforms, drone, propeller, time) {
+    gl.depthFunc(gl.LESS);  // use the default depth test
+    gl.useProgram(envProgramInfo.program);
+    webglUtils.setUniforms(envProgramInfo, sharedUniforms);
+
+    // =========== Compute the world matrix once since all parts =========
+
+    if (verse) {
+        upDown -= 0.02;
+
+    } else {
+        upDown += 0.02;
+    }
+    if (upDown < 2 || upDown > 4) verse = !verse;
+
+    let u_world = m4.identity();
+    u_world = m4.yRotation(0);
+    u_world = m4.translate(u_world, ...drone.offset);
+    u_world = m4.translate(u_world, ...[0, 10.5, -23])
+    u_world = m4.scale(u_world, ...[1.5, 1.5, 1.5])
+    u_world = m4.translate(u_world, ...[0, upDown, 0])
+
+    for (const { bufferInfo, material } of drone.p) {
+        webglUtils.setBuffersAndAttributes(gl, envProgramInfo, bufferInfo);
+        webglUtils.setUniforms(envProgramInfo, {
+            u_world,
+        }, material);
+        webglUtils.drawBufferInfo(gl, bufferInfo);
+    }
+
+    webglUtils.setUniforms(envProgramInfo, sharedUniforms);
+    u_world = m4.identity();
+    u_world = m4.translate(u_world, ...[0.25, 14, -23.3])
+    u_world = m4.translate(u_world, ...propeller.offset);
+    u_world = m4.scale(u_world, ...[1.5, 1.5, 1.5]);
+    u_world = m4.multiply(u_world, m4.yRotation(time * 8));
+    u_world = m4.translate(u_world, ...[0, upDown, 0])
+
+    for (const { bufferInfo, material } of propeller.p) {
+        webglUtils.setBuffersAndAttributes(gl, envProgramInfo, bufferInfo);
+        webglUtils.setUniforms(envProgramInfo, {
+            u_world,
+        }, material);
+        webglUtils.drawBufferInfo(gl, bufferInfo);
+    }
+
+
 }
 
 
@@ -670,7 +727,7 @@ function updateStep(time) {
     }
 }
 /**
- * 
+ *  Update Jumpman Movement function based on the current key event pressing
  */
 function updateJumpmanMove(time) {
     if (isPlatformCollision) {
@@ -836,15 +893,15 @@ function generateRandomCoin(n) {
 function checkObstacleCollision(time) {
     for (let i = 0; i < obstaclePosition.length; i++) {
         if (obstacleAppearance[i]) {
-            var rect = {max : {x : obstaclePosition[i][0] + 3, y : obstaclePosition[i][2] + 0.5}, min : {x : obstaclePosition[i][0] - 3, y : obstaclePosition[i][2] - 0.5}}
-            var p = {x : jumpmanPosition[0], y : jumpmanPosition[2]} // x and z 
+            var rect = { max: { x: obstaclePosition[i][0] + 3, y: obstaclePosition[i][2] + 0.5 }, min: { x: obstaclePosition[i][0] - 3, y: obstaclePosition[i][2] - 0.5 } }
+            var p = { x: jumpmanPosition[0], y: jumpmanPosition[2] } // x and z 
             if (distance(rect, p) < 2) {
                 invulnerability = time - invulnerability;
-                if(invulnerability < 3) life += 1;
+                if (invulnerability < 3) life += 1;
                 invulnerability = time;
-                if(jumpmanPosition[2] >= 8){
+                if (jumpmanPosition[2] >= 8) {
                     // limit hits
-                    jumpmanPosition = [0,0.5, jumpmanPosition[2] - 3];
+                    jumpmanPosition = [0, 0.5, jumpmanPosition[2] - 3];
                 } else {
                     // normal hit
                     jumpmanPosition = [0, 0.5, 12];
@@ -852,7 +909,7 @@ function checkObstacleCollision(time) {
                 life -= 1;
                 break
             }
-            
+
         }
     }
 }
@@ -934,13 +991,6 @@ async function runSelectCharScene() {
 
     // Draw the scene.
     async function drawScene(time) {
-
-        // load object only if it changes
-        if (oldIndex != indexTexture) {
-            await selectColoredJumpman(gl, indexTexture)
-            oldIndex = indexTexture;
-        }
-
 
         // convert to seconds
         time *= 0.001;
@@ -1149,11 +1199,15 @@ function drawGameScene(time) {
     drawFeet(gl, envProgramInfo, sharedUniforms, rightFeet, jumpmanRotation, jumpmanPosition, 1);
     drawFeet(gl, envProgramInfo, sharedUniforms, leftFeet, jumpmanRotation, jumpmanPosition, 0);
 
+
+
     // draw Skybox
     drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);
 
 
     // changing uniforms for the cloud light
+
+    drawDrone(gl, envProgramInfo, sharedUniforms, drone, propeller, time)
 
     sharedUniforms = {
         u_lightDirection: m4.normalize([0, 0.2, 0]), // direction of the source light

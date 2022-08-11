@@ -8,7 +8,6 @@
 var audio, preview, shadow, info, objects, hidden, iconPreview, play;
 
 // Skin Switching 
-var back, forward;
 var indexTexture = 0; // index of the wavefront object to load
 var oldIndex; 
 
@@ -58,20 +57,6 @@ function audioToggle(){
 }
 
 /**
- * Select the previous skin
- */
-function backSkin(){
-    indexTexture--;
-}
-
-/**
- * Select the next skin
- */
-function forwardSkin(){
-    indexTexture++;
-}
-
-/**
  * Start game status
  */
 function startGame(){
@@ -84,8 +69,6 @@ function startGame(){
 function toggleStartButtons(){
     if(gameStart){
         play.style.display = "none";
-        back.style.display = "none";
-        forward.style.display = "none";
     }
 }
 
@@ -110,8 +93,6 @@ function initButtonControllers(){
     info = document.getElementById('info');
     iconPreview = document.getElementById("inner-visibility-icon");
     objects = document.getElementsByClassName('object');
-    back = document.getElementById('arrow-back');
-    forward = document.getElementById('arrow-forward');
     play = document.getElementById('play-button');
     hidden = false;
     gameStart = false;
@@ -120,8 +101,6 @@ function initButtonControllers(){
     audio.onclick = audioToggle;
     shadow.onclick = shadowToggle;
     info.onclick = linkInfo;
-    back.onclick = backSkin;
-    forward.onclick = forwardSkin;
     play.onclick = startGame;
 
 }
