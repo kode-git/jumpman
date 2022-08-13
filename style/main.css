@@ -13,23 +13,11 @@
         url(https://example.com/MaterialIcons-Regular.ttf) format('truetype');
 }
 
-
-.loading{
-    margin-right: auto;
-    margin-left: auto;
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    display: absolute;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 500000;
+html {
+    overflow: hidden;
 }
-
 .full {
-    display: none;
+    display: block;
 }
 
 .material-icons {

@@ -5,8 +5,6 @@ var zoomKey = [false, false];
 var moveKey = [false, false, false, false]; // a w s d 
 var isMove = [false, false, false, false]
 
-var zoomInTouch = document.getElementById('zoom-in');
-var zoomOutTouch = document.getElementById('zoom-out');
 
 /**
  * Listener when a key is release
@@ -38,12 +36,3 @@ var keyDown = function(e){
     if(e.keyCode == 68) moveKey[3] = true; // d key
 }
 
-/*
-zoomInTouch.onclick = (e) =>{
-    D--;
-}
-
-zoomOutTouch.onclick = (e) =>{
-    D++;
-}
-*/

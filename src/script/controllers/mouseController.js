@@ -4,19 +4,6 @@
 //              Mouse Controller
 //===================================================
 
-// mouse movement 
-var drag = false;
-var lastX, lastY;
-var dX = 0, dY = 0;
-
-// camera controls
-var theta = degToRad(90);
-var phi = degToRad(10);
-var D = 7;
-
-var abs;
-var zoomIn, zoomOut;
-
 /**
  * Listener for the mouse down
  * @param {*} e

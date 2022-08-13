@@ -436,8 +436,8 @@ function drawDrone(gl, envProgramInfo, sharedUniforms, drone, propeller, time) {
 function zoomUpdate() {
     if (zoomKey[0] && D == 5) return; // min zoom
     if (zoomKey[1] && D == 20) return; // max zoom
-    if (zoomKey[0]) D += 1;
-    if (zoomKey[1]) D -= 1;
+    if (zoomKey[0]) { D += 1;}
+    if (zoomKey[1]) { D -= 1;}
 }
 
 
@@ -975,7 +975,7 @@ function loadAndRun() {
 
     // loading jumpmans 
     initResource(gl).then(() => {
-        loadingInterface(); // Starting the interface with the loading phase
+        // loadingInterface(); // Starting the interface with the loading phase
         runSelectCharScene();
     })
 }
