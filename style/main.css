@@ -355,6 +355,15 @@ canvas {
     height: 700px;
 }
 
+#rotation-element {
+    display: 'none';
+    justify-content: center;
+    align-items: center;
+    margin-left: auto;
+    margin-right: ;
+}
+
+
 
 
 @keyframes MoveUpDownTop {
@@ -429,7 +438,25 @@ canvas {
         right: 20%;
     }
 
-    #play-button{
-        left: 40%;
+    
+}
+
+@media(max-height: 600px){
+    canvas {
+        height: 455px;
+        margin-top: 0 !important;
+        position: absolute !important;
+        display: fixed !important;
+        top: 0 !important;
     }
+
+    .outler-text{
+        color: black;
+    }
+
+    #play-button {
+        left: 425px;
+        bottom: 20px;
+    }
+
 }

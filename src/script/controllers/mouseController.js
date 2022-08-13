@@ -15,6 +15,7 @@ var phi = degToRad(10);
 var D = 7;
 
 var abs;
+var zoomIn, zoomOut;
 
 /**
  * Listener for the mouse down

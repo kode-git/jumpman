@@ -9,6 +9,18 @@
 
 var gl, canvas;
 
+
+// Scroll problems ontouchmove
+
+// Chrome adaptation
+try {
+  window.addEventListener("test", null, Object.defineProperty({}, 'passive', {
+    get: function () { supportsPassive = true; } 
+  }));
+} catch(e) {}
+var supportsPassive = false;
+var wheelOpt = supportsPassive ? { passive: false } : false;
+
 // GLSL Programs
 var envProgramInfo, skyboxProgramInfo;
 
@@ -53,8 +65,6 @@ var viewDirectionProjectionInverseMatrix, viewDirectionProjectionMatrix, worldMa
 // Platform Collision
 var isPlatformCollision
 var platformCollision = [false, false, false, false];
-
-// Obstacles Collision
 
 // ========================================
 
@@ -801,13 +811,44 @@ function toggleListener(canvas) {
         canvas.onmouseup = mouseUp;
         canvas.mouseout = mouseUp;
         canvas.onmousemove = mouseMove;
+        canvas.addEventListener("touchstart", function(event) {
+            var touch;
+              if (event.targetTouches.length == 1) {
+                  touch = event.targetTouches[0];
+              drag = true;
+              lastX = touch.pageX, lastY = touch.pageY;
+            return false;
+            }
+          });
+          
+          canvas.addEventListener("touchend", function(event) {
+            drag = false;
+          });
+          
+          canvas.addEventListener("touchmove", function(event) {
+              var touch;
+              if (event.targetTouches.length == 1) {
+                  touch = event.targetTouches[0];
+              if (!drag) return false; 
+              dX =- (touch.pageX-lastX) * 2 * Math.PI/canvas.width; 
+              dY =- (touch.pageY-lastY) * 2 * Math.PI/canvas.height; 
+              theta += dX;
+              phi += dY;
+              lastX = touch.pageX, lastY = touch.pageY; 
+              render();
+              }
+          });
         window.addEventListener('keydown', keyDown);
         window.addEventListener('keyup', keyUp);
+
     } else {
         canvas.onmousedown = (e) => { };
         canvas.onmouseup = (e) => { };
         canvas.onmouseout = (e) => { };
         canvas.onmousemove = (e) => { };
+        canvas.touchstart = (e) => { };
+        canvas.touchend = (e) => { };
+        canvas.touchmove = (e) => { };
         window.addEventListener('keydown', (e) => { });
         window.addEventListener('keyup', (e) => { });
     }
