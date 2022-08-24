@@ -7,17 +7,16 @@
 ====================================
 */
 
-var gl, canvas;
+var gl, canvas, textCanvas, textContext;
 
 
 // Scroll problems ontouchmove
-
 // Chrome adaptation
 try {
-  window.addEventListener("test", null, Object.defineProperty({}, 'passive', {
-    get: function () { supportsPassive = true; } 
-  }));
-} catch(e) {}
+    window.addEventListener("test", null, Object.defineProperty({}, 'passive', {
+        get: function () { supportsPassive = true; }
+    }));
+} catch (e) { }
 var supportsPassive = false;
 var wheelOpt = supportsPassive ? { passive: false } : false;
 
@@ -33,7 +32,6 @@ var objOffset;
 var sharedUniforms;
 
 // ======== Skybox Object ===========
-
 var quadBufferInfo; // SkyBox buffer
 var texture; // Skybox texture
 
@@ -183,7 +181,7 @@ var mouseToggle = true;
  * @param {*} gl 
  */
 async function initResource(gl) {
-    
+
     // Loading of jumpmans models
     let dataJump = await loadObjParts(gl, startJumpmanUrl);
     parts = dataJump.p;
@@ -263,67 +261,6 @@ async function initResource(gl) {
     }
 
 }
-
-
-function textureSetting() {
-
-    depthTexture = gl.createTexture();
-    const depthTextureSize = 512;
-    gl.bindTexture(gl.TEXTURE_2D, depthTexture);
-    gl.texImage2D(
-        gl.TEXTURE_2D,      // target
-        0,                  // mip level
-        gl.DEPTH_COMPONENT, // internal format
-        depthTextureSize,   // width
-        depthTextureSize,   // height
-        0,                  // border
-        gl.DEPTH_COMPONENT, // format
-        gl.UNSIGNED_INT,    // type
-        null);              // data
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-    depthFramebuffer = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
-    gl.framebufferTexture2D(
-        gl.FRAMEBUFFER,       // target
-        gl.DEPTH_ATTACHMENT,  // attachment point
-        gl.TEXTURE_2D,        // texture target
-        depthTexture,         // texture
-        0);                   // mip level
-
-    // create a color texture of the same size as the depth texture
-    // see article why this is needed_
-    unusedTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, unusedTexture);
-    gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA,
-        depthTextureSize,
-        depthTextureSize,
-        0,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        null,
-    );
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-    // attach it to the framebuffer
-    gl.framebufferTexture2D(
-        gl.FRAMEBUFFER,        // target
-        gl.COLOR_ATTACHMENT0,  // attachment point
-        gl.TEXTURE_2D,         // texture target
-        unusedTexture,         // texture
-        0);                    // mip level
-}
-
-
 
 
 
@@ -436,8 +373,8 @@ function drawDrone(gl, envProgramInfo, sharedUniforms, drone, propeller, time) {
 function zoomUpdate() {
     if (zoomKey[0] && D == 5) return; // min zoom
     if (zoomKey[1] && D == 20) return; // max zoom
-    if (zoomKey[0]) { D += 1;}
-    if (zoomKey[1]) { D -= 1;}
+    if (zoomKey[0]) { D += 1; }
+    if (zoomKey[1]) { D -= 1; }
 }
 
 
@@ -767,8 +704,6 @@ function updateJumpmanMove(time) {
         if (moveKey[3] && moveKey[1]) jumpmanRotation[1] = 135;
 
     }
-
-
 }
 
 
@@ -811,33 +746,33 @@ function toggleListener(canvas) {
         canvas.onmouseup = mouseUp;
         canvas.mouseout = mouseUp;
         canvas.onmousemove = mouseMove;
-        canvas.addEventListener("touchstart", function(event) {
+        canvas.addEventListener("touchstart", function (event) {
             var touch;
-              if (event.targetTouches.length == 1) {
-                  touch = event.targetTouches[0];
-              drag = true;
-              lastX = touch.pageX, lastY = touch.pageY;
-            return false;
+            if (event.targetTouches.length == 1) {
+                touch = event.targetTouches[0];
+                drag = true;
+                lastX = touch.pageX, lastY = touch.pageY;
+                return false;
             }
-          });
-          
-          canvas.addEventListener("touchend", function(event) {
+        });
+
+        canvas.addEventListener("touchend", function (event) {
             drag = false;
-          });
-          
-          canvas.addEventListener("touchmove", function(event) {
-              var touch;
-              if (event.targetTouches.length == 1) {
-                  touch = event.targetTouches[0];
-              if (!drag) return false; 
-              dX =- (touch.pageX-lastX) * 2 * Math.PI/canvas.width; 
-              dY =- (touch.pageY-lastY) * 2 * Math.PI/canvas.height; 
-              theta += dX;
-              phi += dY;
-              lastX = touch.pageX, lastY = touch.pageY; 
-              render();
-              }
-          });
+        });
+
+        canvas.addEventListener("touchmove", function (event) {
+            var touch;
+            if (event.targetTouches.length == 1) {
+                touch = event.targetTouches[0];
+                if (!drag) return false;
+                dX = - (touch.pageX - lastX) * 2 * Math.PI / canvas.width;
+                dY = - (touch.pageY - lastY) * 2 * Math.PI / canvas.height;
+                theta += dX;
+                phi += dY;
+                lastX = touch.pageX, lastY = touch.pageY;
+                render();
+            }
+        });
         window.addEventListener('keydown', keyDown);
         window.addEventListener('keyup', keyUp);
 
@@ -968,7 +903,9 @@ function loadAndRun() {
     // Get A WebGL context
     /** @type {HTMLCanvasElement} */
     canvas = document.getElementById("game");
+    textCanvas = document.getElementById('text');
     gl = canvas.getContext("webgl");
+    textContext = textCanvas.getContext('2d');
     if (!gl) {
         return;
     }
@@ -986,6 +923,7 @@ function loadAndRun() {
  */
 function clearFrame(gl) {
     webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+    textContext ? textContext.clearRect(0, 0, textContext.canvas.width, textContext.canvas.height) : null;
 
     // Tell WebGL how to convert from clip space to pixels
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -1101,8 +1039,6 @@ async function runSelectCharScene() {
 }
 
 
-
-
 /*
 ====================================
         Main Function of the 
@@ -1144,9 +1080,7 @@ function drawGameScene(time) {
     clearFrame(gl);
 
     // Update zoom and angle of camera 
-    zoomUpdate()
-
-
+    zoomUpdate();
 
     // redefine matrices 
     projectionMatrix =
@@ -1179,9 +1113,6 @@ function drawGameScene(time) {
         projectionMatrix, viewDirectionMatrix);
     viewDirectionProjectionInverseMatrix =
         m4.inverse(viewDirectionProjectionMatrix);
-
-
-    // Light
 
 
     // update sharedUniforms for the platform
@@ -1262,6 +1193,13 @@ function drawGameScene(time) {
         shiness: 150,
     };
     drawCloud(gl, envProgramInfo, sharedUniforms, cloud, platformTranslation)
+
+    // draw the text for the score and life
+    /*to manage text on canvas and webgl */
+    textContext.font = '1.75rem Titan One';
+    textContext.fillStyle = 'white';
+    textContext.fillText('Score: ' + coinPoint + ' - Life: ' + life, 160, 150);
+
 
     // animation frame iteration
     requestAnimationFrame(drawGameScene)

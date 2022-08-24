@@ -343,6 +343,12 @@ canvas {
     height: 700px;
 }
 
+
+.text {
+    z-index: 500000000;
+}
+
+
 #rotation-element {
     display: 'none';
     justify-content: center;

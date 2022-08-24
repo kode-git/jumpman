@@ -28,69 +28,84 @@
                             (o con le dita per poter adattarlo ai dispositivi mobile). Il progetto è disponibile al
                             seguente <a href="game.html">link</a>.
                         </p>
-                        <h3>2. Progettazione</h3>
+                        <h3>2. Descrizione Applicazione</h3>
                         <p>
-                            L'obiettivo prefissato è inerente allo sviluppo di un tutorial di Jumpman in cui si avrà una
-                            fase iniziale in cui vi sarà la
-                            scelta del personaggio che andrà a differerire basadosi su texture applicate ad wavefront
-                            object esportati da Blender. Il modello di base e il materiale saranno sempre gli stessi,
-                            vi saranno cambiamenti solamente nella scelta della texture in cui sarà collegata al
-                            wavefront object che si vuole selezionare una volta visualizzato nella scena.
-
-                            Successivamente, al click su play si passerà al tutorial del gioco. La scena presentata è
-                            stata progettata, come il modello del Jumpman, da 0 secondo le tecniche di base usufruibili
-                            da Blender (gestione poligonale delle componenti, materiali, diffusione della luce, etc.).
-
-                            Il progetto si può sintetizzare in differenti fasi:
-                            <br><br>
-                            <b>2.1 Progettazione dei modelli su Blender</b> <br><br>
-                            Uno dei primi obiettivi è riferito alla modellazione su blender. In questa fase, abbiamo
-                            definito, partendo da un cubo, la base del Jump Man cosi da poterlo applicare su differenti
-                            materiali, ognuno rappresentato da proprietà differenti. Per poter realizzare la baseline,
-                            ho seguito due riferimenti date da un immagine frontale e una laterale. Sono state
-                            utilizzate le trasformazioni 3D classiche, esposizioni per il prolungamento e rifinitura
-                            delle componenti, e suddivisione della superfice per arrotondamenti. L'intero modello è
-                            stato costruito seguendo un tutorial. <br><br>
-                            <img class="content-image" src="screens/blender_screen_start_jumpman.png"></img>
-                            <br>
-                            Data la possibilità di variazione della texture del personaggio, per questione di
-                            ottimizzazione del caricamento,
-                            saranno ricaricati solamente i file inerenti al .mtl cosi da poter applicare i materiali
-                            (che andranno a definire texture e colori)
-                            senza cambiare i riferimenti posizionali dell'oggetto collegato al jumpman della scena
-                            iniziale.<br><br>
-
-                            <b>2.2 Progettazione delle scene su Blender</b><br><br>
-
-                            <b>2.3 Generazione dell'ambiente WebGL</b><br><br>
-                            L'ambiente WebGL è all'interno di un canvas di dimensione variabile, riadattabile con
-                            aggiornamento ad ogni frame. La frequenza dei frame è fornita da un valore FPS che esegue
-                            un monitoraggio continuo con aggiornamento ogni 50 frame (per evitare effetti di
-                            aggiornamenti velocizzati e non visibili all'occhio umano). La scena WebGL è composta da due
-                            fasi:<br><br>
-                            - <i>Fase di selezione del giocatore</i>, in cui poter cambiare la skin del jumpman
-                            (rappresentata da un cambio di materiale in un file .obj).<br>
-                            - <i>Fase di gioco</i>, in cui vi è il caricamento della scena principale con relativi
-                            movimenti, camera con movimenti tridimensionali non vincolata e possibilità di switching
-                            della visuale tramite il click su un bottone. <br><br>
-                            Per evitare che vi siano ritardi di caricamento, poichè i file .obj esportati da blender
-                            hanno un determinato peso, si è pensato di applicare una fase di caricamento durante il page
-                            loading. Questa scelta porterà ad un caricamento
-                            dei dati in manierà più lenta quando si andrà nella schermata di gioco ma, durante lo
-                            svolgimento e in fase di selezionamento del personaggio, non vi sono ritardi, andando a
-                            massimizzare l'esperienza di gioco. Entrambe le scene hanno uno skybox rappresentato da un
-                            cubo a massima profondità su ogni faccia,
-                            il caricamento della texture viene effettuata solamente 1 volta in fase di selezionamento
-                            del personaggio. Entrambe le scene hanno un movimento della camera con renderizzamento della
-                            prospettiva e del punto di vista ad ogni frame.
-                            La telecamera supporta sia il tocco (per dispositivi mobili, touchscreen) che la gestione
-                            tramite trackpad o mouse. La gestione degli eventi per il movimento e per la camera verranno
-                            approfonditi nel paragrafo successivo. <br><br>
-                            <b>2.4 Gestione movimenti e camera</b><br><br>
-                            <b>2.5 Applicazione di effetti avanzati</b><br><br>
+                            Il gioco consiste in 2 scene implementate secondo una successione prefissata. La prima scena
+                            rappresenta una base per visualizzare il personaggio utilizzato sul gioco, per scelta
+                            progettuale, non vi è la possibilità di muovere con il mouse o con il tocco la scena, mentre
+                            è possibile visualizzare tutto il modello wavefront .OBJ del personaggio su una pedana
+                            tramite una rotazione automatica sull'asse y effettuata sul modello caricato e correttamente
+                            rendirizzato tramite WebGL. Nelle sezioni successive andremmo ad illustrare una descrizione
+                            ad alto livello del gioco in modo da tener presente le funzionalità di base e capire la
+                            logica interna.
+                        </p>
+                        <h3>2.1 Descrizione e Funzionamento del Gioco</h3>
+                        <p>
+                            La scena iniziale si presenta con un illustrazione del personaggio principale e un tasto
+                            "Play".
+                            Quando il giocatore è pronto ad iniziare, avvia il gioco cliccandoci.
+                            Successivamente, il gioco inizierà andando ad illustrare una scena in cui è possibile
+                            muovere il
+                            personaggio (Jumpman) tramite i tasti di movimento classici (w,a, s, d) e una loro
+                            combinazione
+                            per i movimenti angolati. Lo scopo del gioco è prendere il maggior numero di monete senza
+                            colpire gli ostacoli. Ogni volta che il personaggio colpirà uno degli ostacoli, perderà una
+                            vita. Ad ogni partita, il giocatore avrà a disposizione 3 vite, non vi sono meccanismi in
+                            cui
+                            poter recuperare o aggiungere vite perse. All'inizio della partita verranno posizionate sul
+                            pavimento, in maniera pseudo-randomica, le monete. Il giocatore dovrà raccoglierle
+                            semplicemente
+                            avvicinandosi ad ogni moneta. Nel caso si raccolgano tutte le monete sul campo, il gioco
+                            prevede
+                            un redrop in altre posizioni pseudo-casuali. La partita termina quando il giocatore avrà
+                            terminato le sue vite. Ogni moneta acquisita, sarà un punto in più sullo score totale
+                            mostrato a
+                            schermo.
+                        </p>
+                        <h3>3. Scelte Progettuali</h3>
+                        <p>
+                            All'interno di questa sezione andremo a definire delle scelte progettuali inerente al codice
+                            utilizzato per la programmazione del gioco.
                         </p>
 
-
+                        <h3>3.1 Caricamento Componenti </h3>
+                        <p>
+                            Il caricamento dei modelli segue la formattazione di file wavefront .OBJ andando a caricarne
+                            le varie parti (facce) partendo dalle coordinate dei suoi vertici e i
+                            materiali annessi. Tutti i modelli sono stati realizzati da 0 o a partire da dei modelli
+                            pre-esistenti su internet. In entrambi i casi, vi sono state effettuate delle modifiche in
+                            modo da poter determinare una loro corretta animazione all'interno della scena. Tutti i file
+                            blender, successivamente alle modifiche, sono state esportate in file .OBJ in modo da
+                            poterli caricare correttamente durante il rendering della scena. Nella scena è presente
+                            anche una skybox che, a differenza degli altri componenti della scena, è rappresentata da un
+                            cubo massiizzandone la profondità su ogni faccia e, successivamente, applicando una texture
+                            per garantire il background della scena.
+                        </p>
+                        <h3>3.2 Animazioni</h3>
+                        <p>
+                            Le animazioni sono proprie per componente, sono state effettuate delle modifiche sulle
+                            coordinate dei vertici della world matrix. Nello specifico, ciò che si è fatti è andare a
+                            definire delle matrici di translazione, rotazione e, in alcuni casi, di scaling che possono
+                            variare al click di un tasto (nel caso dell'animazione del movimento del Jumpman), secondo
+                            una fase temporale (movimento degli ostacoli, rotazione delle monete e del drone con
+                            l'immagine dell'autore), oppure condizionata (hitting degli ostacoli da parte del Jumpman).
+                            Per garantire una corretta animazione del personaggio principale durante il movimento, si è
+                            pensato di simularne un movimento simile a quelle dei pinguini nei film; ossia un movimento
+                            laterale del corpo e un veloce passo da parte dei piedi. Per poter realizzare tale effetto,
+                            i modelli blender, e i rispettivi file .OBJ esportati, sono stati divisi in 3 componenti
+                            separate: piede sinistro, piede destro e corpo. Mentre il corpo avrà una rotazione sull'asse
+                            laterale, i piedi avranno una rotazione sincronizzata e opposta in modo da simulare il passo
+                            in avanti). Per compiere un corretto orientamento del personaggio, si effettusa una
+                            rotazione al click di uno dei tasti del movimento (w, a, s, d) in modo tale da far si che
+                            l'animazione del corpo e dei piedi sia orientata secondo la direzione del movimento. Nella
+                            scena sono presenti animazioni più semplici che prevedono semplici rotazioni: elica del
+                            drone, translazione verticale del drone per simulare la fluttuazione, rotazione delle
+                            monete.
+                        </p>
+                        <h3>3.3 Luci</h3>
+                        <p>
+                            
+                        </p>
                         <h3>Disclaimer</h3>
                         <p>
                             L'utilizzo del progetto è solo per scopi accademici, non si autorizza da Fall Guy l'utilizzo

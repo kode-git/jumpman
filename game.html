@@ -31,41 +31,9 @@
             </div>
         </div>
     </div>
-    <!--
 
-
-    <div class="full">
-  
-        <button id="audio" class="btn btn-audio"><span id="inner-audio-icon" class="material-symbols-outlined">
-                volume_up
-            </span> <span class="btn-text"></span></button>
-        <button id="shadow" class="btn btn-shadow"><span id="inner-shadow-icon" class="material-symbols-outlined">
-                ev_shadow
-            </span></button>
-        <button id="preview" class="btn btn-preview">
-            <span id="inner-visibility-icon" class="material-symbols-outlined">
-                visibility
-            </span>
-        </button>
-        <button id="info" class="btn btn-preview">
-            <span id="inner-quest" class="material-symbols-outlined">
-                question_mark
-            </span>
-        </button>
-        <button id="zoom-in" class="btn btn-zoom-in">
-            <span id="inner-quest" class="material-symbols-outlined">
-                zoom_in
-            </span>
-        </button>
-        <button id="zoom-out" class="btn btn-zoom-out">
-            <span id="inner-quest" class="material-symbols-outlined">
-                zoom_out
-            </span>
-        </button>
-            -->
-
-        <!-- FPS System -->
-        <span class="outler-text">FPS:</span><span id="fps-value" class="outler-text">0</span>
+    <!-- FPS System -->
+    <span class="outler-text">FPS:</span><span id="fps-value" class="outler-text">0</span>
     </div>
 
 
@@ -90,11 +58,16 @@
         varying vec4 v_color;
       
         void main() {
+          // world Position adaptation for prospective view
           vec4 worldPosition = u_world * a_position;
           gl_Position = u_projection * u_view * worldPosition;
           v_surfaceToView = u_viewWorldPosition - worldPosition.xyz;
+
+          // normal
           v_normal = mat3(u_world) * a_normal;
+          // texel
           v_texcoord = a_texcoord;
+          // coplor
           v_color = a_color;
         }
     </script>
@@ -124,18 +97,24 @@
             vec3 surfaceToViewDirection = normalize(v_surfaceToView);
             vec3 halfVector = normalize(u_lightDirection + surfaceToViewDirection);
 
+            // light in the clipped space (imitation)
             float fakeLight = dot(u_lightDirection, normal) * .5 + .5;
+            // specular light
             float specularLight = clamp(dot(normal, halfVector), 0.0, 1.0);
 
+            // texture application
             vec4 diffuseMapColor = texture2D(diffuseMap, v_texcoord);
+            // effective diffuse on the texture application on the object in composition
             vec3 effectiveDiffuse = diffuse * diffuseMapColor.rgb * v_color.rgb;
+            // opacity given by the a value of the diffuse map color and base fragment color
             float effectiveOpacity = opacity * diffuseMapColor.a * v_color.a;
 
+            // coloration
             gl_FragColor = vec4(
                 emissive +
                 ambient * u_ambientLight +
-                effectiveDiffuse * fakeLight +
-                specular * pow(specularLight, shininess),
+                effectiveDiffuse * fakeLight,
+                //specular * pow(specularLight, shininess),
                 effectiveOpacity);
             }
     </script>
