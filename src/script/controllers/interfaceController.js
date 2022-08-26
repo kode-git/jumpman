@@ -34,6 +34,12 @@ var gameStart; // check the status of the inner game
 // key to predict scrolls
 var keys = {37: 1, 38: 1, 39: 1, 40: 1};
 
+// mobile controls
+var wKey, aKey, sKey, dKey;
+
+// mobile keyboard
+var mobile;
+
 // modern Chrome requires { passive: false } when adding event
 var supportsPassive = false;
 try {
@@ -126,26 +132,24 @@ function startGame(){
 }
 
 /**
- * Remove the Start Buttons
+ * Toggle the Start Buttons
  */
 function toggleStartButtons(){
     if(gameStart){
         play.style.display = "none";
+    } else {
+        play.style.display = "block";
     }
 }
 
-/*
-function loadingInterface(){
-    var contents = document.getElementsByClassName('full');
-    var loading = document.getElementById('loading');
-    loading.style.display = "none";
-    for(let i = 0; i < contents.length; i++){
-        contents[i].style.display = "block";
+function toggleMobileButton(isMobile){
+    if(!isMobile){
+        mobile = document.getElementById('mobile-buttons');
+        mobile.style.display = "none";
+    } else {
+        mobile.style.display = "block";
     }
 }
-
-*/
-
 /**
  * Main function.
  */
@@ -156,17 +160,23 @@ function initButtonControllers(){
     shadow = document.getElementById('shadow');
     info = document.getElementById('info');
     */
+
     objects = document.getElementsByClassName('object');
     play = document.getElementById('play-button');
+
+    // mobile keyboards
+    aKey = document.getElementById('a-key');
+    wKey = document.getElementById('w-key');
+    sKey = document.getElementById('s-key');
+    dKey = document.getElementById('d-key');
+
+    // mobile container 
+    mobile = document.getElementById('mobile-buttons');
+
+    // initial interface status
     hidden = false;
     gameStart = false;
     
-    /*
-    preview.onclick = initPreviewController;
-    audio.onclick = audioToggle;
-    shadow.onclick = shadowToggle;
-    info.onclick = linkInfo;
-    */
     play.onclick = startGame;
 
 }

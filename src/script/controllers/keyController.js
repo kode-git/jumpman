@@ -36,3 +36,38 @@ var keyDown = function(e){
     if(e.keyCode == 68) moveKey[3] = true; // d key
 }
 
+// mobile keyboard
+
+aKey.addEventListener('touchstart', function(e){
+    moveKey[0] = true;    
+})
+
+aKey.addEventListener('touchend', function(e){
+    moveKey[0] = false;
+})
+
+wKey.addEventListener('touchstart', function(e){
+    moveKey[1] = true;    
+})
+
+wKey.addEventListener('touchend', function(e){
+    moveKey[1] = false;
+})
+
+
+sKey.addEventListener('touchstart', function(e){
+    moveKey[2] = true;    
+})
+
+sKey.addEventListener('touchend', function(e){
+    moveKey[2] = false;
+})
+
+dKey.addEventListener('touchstart', function(e){
+    moveKey[3] = true;    
+})
+
+dKey.addEventListener('touchend', function(e){
+    moveKey[3] = false;
+})
+

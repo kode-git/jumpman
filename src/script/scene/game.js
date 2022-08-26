@@ -737,7 +737,8 @@ function updateObstacles(time) {
 }
 
 /**
- * Add or remove Mouse listener
+ * Add or remove Mouse listener on the text canvas (that is because the z-buffer of the text canvas is greater than the game canvas),
+ * so, there is an overlayer for the game canvas that will not catch any event outside the overlap.
  * @param {*} canvas is the canvas where apply or cancel listeners 
  */
 function toggleListener(canvas) {
@@ -770,13 +771,14 @@ function toggleListener(canvas) {
                 theta += dX;
                 phi += dY;
                 lastX = touch.pageX, lastY = touch.pageY;
-                render();
             }
         });
+
         window.addEventListener('keydown', keyDown);
         window.addEventListener('keyup', keyUp);
 
     } else {
+
         canvas.onmousedown = (e) => { };
         canvas.onmouseup = (e) => { };
         canvas.onmouseout = (e) => { };
@@ -897,6 +899,16 @@ function checkObstacleCollision(time) {
           SelectChar Scene 
 ====================================
 */
+
+
+function checkMobileSize(){
+    if(window.innerHeight < 500 && window.innerWidth < 900){
+        // it is mobile
+        toggleMobileButton(true);
+    } else {
+        toggleMobileButton(false);
+    }
+}
 
 
 function loadAndRun() {
@@ -1050,7 +1062,7 @@ async function runSelectCharScene() {
  * @param {*} gl 
  */
 function initGameScene(gl) {
-    if (canvas) toggleListener(canvas)
+    if(textCanvas) toggleListener(textCanvas);
     // initial camera positioon
     D = 20;
     theta = degToRad(90);
@@ -1063,11 +1075,24 @@ function initGameScene(gl) {
     feetRightState = 1;
 }
 
+function checkGameOver() {
+    if (life <= 0) {
+        textContext ? textContext.clearRect(0, 0, textContext.canvas.width, textContext.canvas.height) : null;
+        textContext.font = '1.75rem Titan One';
+        textContext.fillStyle = 'white';
+        textContext.fillText('Score: ' + coinPoint + ' - Game Over! ', 160, 150);
+        return true;
+    } else return false;
+}
 
 /**
  * Frame Drawing 
  */
 function drawGameScene(time) {
+
+
+    // check if mobile or not 
+    checkMobileSize();
 
     // convert to seconds
     time *= 0.001;
@@ -1200,9 +1225,13 @@ function drawGameScene(time) {
     textContext.fillStyle = 'white';
     textContext.fillText('Score: ' + coinPoint + ' - Life: ' + life, 160, 150);
 
-
-    // animation frame iteration
-    requestAnimationFrame(drawGameScene)
+    // check if there is a game over, in this situation, we will not refresh the frame because the game ends and give the player the possible to restart toggling the play button again.
+    if (checkGameOver()) {
+        return;
+    } else {
+        // animation frame iteration
+        requestAnimationFrame(drawGameScene)
+    }
 }
 
 
@@ -1223,4 +1252,5 @@ function startGameScene() {
 }
 // Load Scene on loading state
 window.onload = loadAndRun;
+window.onresize = checkMobileSize;
 

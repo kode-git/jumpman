@@ -233,8 +233,9 @@ h4 {
 .text { 
     background-color: transparent; 
     position: absolute;
-    left: 100px;
+    left: 200px;
     top: 10px;
+    z-index: 100000000;
   }
 
 .btn {
@@ -336,6 +337,7 @@ h4 {
     color: white !important;
     bottom: 10%;
     left: 46%;
+    z-index: 100000000;
 }
 
 canvas {
@@ -343,9 +345,23 @@ canvas {
     height: 700px;
 }
 
+#mobile-buttons {
+    position: absolute;
+    bottom: 30px;
+    left: 20px;
+    z-index: 10000000000;
+    display: none;
+}
 
-.text {
-    z-index: 500000000;
+#a-key, #w-key, #s-key, #d-key{
+    font-family: "Titan One";
+    text-shadow: rgba(0, 0, 0, 0.25) 0px 2px px;
+    box-shadow: rgba(0, 0, 0, 0.25) 2px 2px 2px;
+    -webkit-text-stroke: 0.5px black;
+    color: white !important;
+    background-color: rgb(254, 213, 48);
+    font-size: 20px;
+    border-radius: 10px;
 }
 
 
@@ -354,7 +370,6 @@ canvas {
     justify-content: center;
     align-items: center;
     margin-left: auto;
-    margin-right: ;
 }
 
 
@@ -449,8 +464,9 @@ canvas {
     }
 
     #play-button {
-        left: 425px;
+        left: 380px;
         bottom: 20px;
+        z-index: 4000000000;
     }
 
 }
