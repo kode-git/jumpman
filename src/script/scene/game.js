@@ -1100,9 +1100,9 @@ function initGameScene(gl) {
 function checkGameOver() {
     if (life <= 0) {
         textContext ? textContext.clearRect(0, 0, textContext.canvas.width, textContext.canvas.height) : null;
-        textContext.font = '1.75rem Titan One';
+        textContext.font = '1.20rem Titan One';
         textContext.fillStyle = 'white';
-        textContext.fillText('Score: ' + coinPoint + ' - Game Over! ', gl.canvas.width / 2, 150);
+        textContext.fillText('Score: ' + coinPoint + ' - Game Over! ',textCanvas.width / 4, 40);
         return true;
     } else return false;
 }
@@ -1164,7 +1164,6 @@ function initShadowTexture() {
         gl.TEXTURE_2D,         // texture target
         unusedTexture,         // texture
         0);                    // mip level
-
 }
 
 function renderGameScene(time) {
@@ -1176,6 +1175,9 @@ function renderGameScene(time) {
     time *= 0.001;
     deltaTime = time - then;
     then = time;
+    if(deltaTime < 0.01){
+        requestAnimationFrame(renderGameScene);
+    }
 
     // clear frame and buffers
     clearFrame(gl);
@@ -1269,11 +1271,21 @@ function renderGameScene(time) {
 }
 
 
+/**
+ * Draw the Game Scene 
+ * @param {*} time is the frame time
+ * @param {*} projectionMatrix is the projection matrix of the camera or the light
+ * @param {*} cameraMatrix is the camera matrix or the world light matrix 
+ * @param {*} textureMatrix is the texture matrix (identity if light)
+ * @param {*} lightWorldMatrix is the world light matrix
+ * @param {*} programInfo is the GLSL program info that defines the color of the light or colored texture for a pixel in the camera view
+ */
 function drawGameScene(time, projectionMatrix, cameraMatrix, textureMatrix, lightWorldMatrix, programInfo) {
 
     const viewMatrix = m4.inverse(cameraMatrix);
     gl.useProgram(programInfo.program);
 
+    // fixed shared values
     sharedUniforms = {
         u_view: viewMatrix,
         u_projection: projectionMatrix,
@@ -1332,9 +1344,9 @@ function drawGameScene(time, projectionMatrix, cameraMatrix, textureMatrix, ligh
 }
 
 function draw2DContent() {
-    textContext.font = '1.75rem Titan One';
+    textContext.font = '1.20rem Titan One';
     textContext.fillStyle = 'white';
-    textContext.fillText('Score: ' + coinPoint + ' - Life: ' + life, 160, 150);
+    textContext.fillText('Score: ' + coinPoint + ' - Life: ' + life, textCanvas.width / 4, 40);
 }
 
 function drawFrustum(gl, programInfo, cameraMatrix, lightWorldMatrix, lightProjectionMatrix) {

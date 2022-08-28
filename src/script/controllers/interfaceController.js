@@ -32,7 +32,7 @@ var objects;
 var gameStart; // check the status of the inner game 
 
 // key to predict scrolls
-var keys = {37: 1, 38: 1, 39: 1, 40: 1};
+var keys = { 37: 1, 38: 1, 39: 1, 40: 1 };
 
 // mobile controls
 var wKey, aKey, sKey, dKey;
@@ -50,40 +50,43 @@ var lightTarget = [0, 0, -10];
 // display frustum
 var isFrustum = false;
 
+// soundtrack
+var soundtrack;
+
 // modern Chrome requires { passive: false } when adding event
 var supportsPassive = false;
 try {
     window.addEventListener("test", null, Object.defineProperty({}, 'passive', {
-      get: function () { supportsPassive = true; } 
+        get: function () { supportsPassive = true; }
     }));
-  } catch(e) {}
-  
-  var wheelOpt = supportsPassive ? { passive: false } : false;
-  var wheelEvent = 'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel';
+} catch (e) { }
+
+var wheelOpt = supportsPassive ? { passive: false } : false;
+var wheelEvent = 'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel';
 
 // control GUI
 var gui = new dat.GUI();
 var controls = {
-    D : 40,
-    shadow : false,
-    image : false,
+    D: 40,
+    shadow: false,
+    image: false,
     frustum: false,
-    lightX : lightPosition[0],
-    lightY : lightPosition[1],
-    lightZ : lightPosition[2],
-    lightTargetX : lightTarget[0],
-    lightTargetY : lightTarget[1],
-    lightTargetZ : lightTarget[2],
-    angleLight : lightAngle,
-    lightNear : lightNear,
-    lightFar : lightFar,
+    lightX: lightPosition[0],
+    lightY: lightPosition[1],
+    lightZ: lightPosition[2],
+    lightTargetX: lightTarget[0],
+    lightTargetY: lightTarget[1],
+    lightTargetZ: lightTarget[2],
+    angleLight: lightAngle,
+    lightNear: lightNear,
+    lightFar: lightFar,
 }
 /**
  * Remove a default event action
  * @param {*} e is the event to trigger
  */
 function preventDefault(e) {
-  e.preventDefault();
+    e.preventDefault();
 }
 
 /**
@@ -92,28 +95,28 @@ function preventDefault(e) {
  * @returns false if it trigger an interested key
  */
 function preventDefaultForScrollKeys(e) {
-  if (keys[e.keyCode]) {
-    preventDefault(e);
-    return false;
-  }
+    if (keys[e.keyCode]) {
+        preventDefault(e);
+        return false;
+    }
 }
 
 /**
  * Disable windows scrolls
  */
 function disableScroll() {
-  window.addEventListener('DOMMouseScroll', preventDefault, false); // older FF
-  window.addEventListener(wheelEvent, preventDefault, wheelOpt); // modern desktop
-  window.addEventListener('touchmove', preventDefault, wheelOpt); // mobile
-  window.addEventListener('keydown', preventDefaultForScrollKeys, false);
+    window.addEventListener('DOMMouseScroll', preventDefault, false); // older FF
+    window.addEventListener(wheelEvent, preventDefault, wheelOpt); // modern desktop
+    window.addEventListener('touchmove', preventDefault, wheelOpt); // mobile
+    window.addEventListener('keydown', preventDefaultForScrollKeys, false);
 }
 
 /**
  * Remove external objects from the interface.
  */
-function initPreviewController(){
+function initPreviewController() {
     for (let object of objects) {
-        if (controls.Image) {
+        if (controls.image) {
             object.style.display = "none";
         }
         else {
@@ -122,48 +125,61 @@ function initPreviewController(){
     }
 }
 
+function initAudio() {
+    soundtrack = new Audio('someSound.ogg');
+    if (typeof sountrack.loop == 'boolean') {
+        soundtrack.loop = true;
+    }
+    else {
+        soundtrack.addEventListener('ended', function () {
+            this.currentTime = 0;
+            this.play();
+        }, false);
+    }
+    soundtrack.play();
+}
+
 /**
  * Redirect to the index.html
  */
-function linkInfo(){
+function linkInfo() {
     startGame = false;
     window.location.replace('./index.html');
 }
 
 /**
- * Remove shadows.
- */
-function shadowToggle(){
-    // 
-}
-
-/**
  * Toggle of audio file in background play.
  */
-function audioToggle(){
-    //
+function audioToggle() {
+    if(soundtrack.loop){
+        soundtrack.loop = false;
+        soundtrack.stop();
+    } else {
+        soundtrack.loop = true;
+        soundtrack.play();
+    }
 }
 
 /**
  * Start game status
  */
-function startGame(){
+function startGame() {
     gameStart = true;
 }
 
 /**
  * Toggle the Start Buttons
  */
-function toggleStartButtons(){
-    if(gameStart){
+function toggleStartButtons() {
+    if (gameStart) {
         play.style.display = "none";
     } else {
         play.style.display = "block";
     }
 }
 
-function toggleMobileButton(isMobile){
-    if(!isMobile){
+function toggleMobileButton(isMobile) {
+    if (!isMobile) {
         mobile = document.getElementById('mobile-buttons');
         mobile.style.display = "none";
     } else {
@@ -173,7 +189,7 @@ function toggleMobileButton(isMobile){
 /**
  * Main function.
  */
-function initButtonControllers(){
+function initButtonControllers() {
     /*
     audio = document.getElementById('audio');
     preview = document.getElementById('preview');
@@ -196,50 +212,50 @@ function initButtonControllers(){
     // initial interface status
     hidden = false;
     gameStart = false;
-    
+
     play.onclick = startGame;
 
 }
 
 
-function initInterfaceGUI(){
-    gui.add(controls, "D").min(0).max(100).step(1).onChange(()=>{
+function initInterfaceGUI() {
+    gui.add(controls, "D").min(0).max(100).step(1).onChange(() => {
         D = controls.D;
     })
-    gui.add(controls, "shadow").onChange(()=>{
+    gui.add(controls, "shadow").onChange(() => {
         isShadow = !isShadow;
     })
-    gui.add(controls, "image").onChange(()=>{
+    gui.add(controls, "image").onChange(() => {
         initPreviewController();
     });
-    gui.add(controls, "frustum").onChange(()=>{
+    gui.add(controls, "frustum").onChange(() => {
         isFrustum = !isFrustum;
     })
-    gui.add(controls, "lightX").min(-10).max(40).step(0.1).onChange(()=>{
+    gui.add(controls, "lightX").min(-10).max(40).step(0.1).onChange(() => {
         lightPosition[0] = controls.lightX;
     })
-    gui.add(controls, "lightY").min(-10).max(40).step(0.1).onChange(()=>{
+    gui.add(controls, "lightY").min(-10).max(40).step(0.1).onChange(() => {
         lightPosition[1] = controls.lightY;
     })
-    gui.add(controls, "lightZ").min(-10).max(40).step(0.1).onChange(()=>{
+    gui.add(controls, "lightZ").min(-10).max(40).step(0.1).onChange(() => {
         lightPosition[2] = controls.lightZ;
     })
-    gui.add(controls, "lightTargetX").min(-10).max(40).step(0.1).onChange(()=>{
+    gui.add(controls, "lightTargetX").min(-10).max(40).step(0.1).onChange(() => {
         lightTarget[0] = controls.lightTargetX;
     })
-    gui.add(controls, "lightTargetY").min(-10).max(40).step(0.1).onChange(()=>{
+    gui.add(controls, "lightTargetY").min(-10).max(40).step(0.1).onChange(() => {
         lightTarget[1] = controls.lightTargetY;
     })
-    gui.add(controls, "lightTargetZ").min(-10).max(40).step(0.1).onChange(()=>{
+    gui.add(controls, "lightTargetZ").min(-10).max(40).step(0.1).onChange(() => {
         lightTarget[2] = controls.lightTargetZ;
     })
-    gui.add(controls, "angleLight").min(0).max(360).step(1).onChange(()=>{
+    gui.add(controls, "angleLight").min(0).max(360).step(1).onChange(() => {
         lightAngle = controls.angleLight;
     })
-    gui.add(controls, "lightNear").min(1).max(40).step(1).onChange(()=>{
+    gui.add(controls, "lightNear").min(1).max(40).step(1).onChange(() => {
         lightNear = controls.lightNear;
     })
-    gui.add(controls, "lightFar").min(0).max(200).step(1).onChange(()=>{
+    gui.add(controls, "lightFar").min(0).max(200).step(1).onChange(() => {
         lightFar = controls.lightFar;
     })
 
@@ -249,4 +265,5 @@ function initInterfaceGUI(){
  * Init script on load
  */
 initButtonControllers();
+initAudio();
 disableScroll();
