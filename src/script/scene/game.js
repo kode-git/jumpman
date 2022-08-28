@@ -36,16 +36,16 @@ var quadBufferInfo; // SkyBox buffer
 var texture; // Skybox texture
 
 
-// Light 
-var ambientLight = [0.1, 0.1, 0.1]
-var lightPosition = [2, 7.0, 0, 0.0];
-var lightAmbient = [0.2, 0.2, 0.2]
+// Fixed light parameters (the light position is managed in the interface.js)
+var ambientLight = [0.1, 0.1, 0.1];
+var lightAmbient = [0.2, 0.2, 0.2];
 var lightDiffuse = [0.8, 0.8, 0.8];
 var lightSpecular = [1.0, 1.0, 1.0];
 var lightShiness = 120;
 
 // Shadow 
 var depthFramebuffer, depthTexture, unusedTexture;
+var depthTextureSize;
 
 // ========================================
 
@@ -120,7 +120,7 @@ var jumpmanPosition = [0, 0.5, 12] // feet level
 var jumpmanScale = [0.8, 0.8, 0.8] // scale body
 var jumpmanRotation = [0, 180, 0] // degree of rotation
 const feetOffset = 2.1 // feet offset for the body level on y axe
-var speedMove = 0.1; // speed movement
+var speedMove = 0.09; // speed movement
 var bodySide = [0, 0, 0] // side inclination for the animation during movement
 
 // step variables
@@ -162,7 +162,7 @@ var obstaclePosition = [
 ]
 var obstacleAppearance = [true, true, true, false];
 var initialAppearance = [true, true, true, true];
-var obstacleSpeed = 0.0014;
+var obstacleSpeed = 0.005;
 // =================================
 
 // Event management
@@ -901,8 +901,8 @@ function checkObstacleCollision(time) {
 */
 
 
-function checkMobileSize(){
-    if(window.innerHeight < 500 && window.innerWidth < 900){
+function checkMobileSize() {
+    if (window.innerHeight < 500 && window.innerWidth < 900) {
         // it is mobile
         toggleMobileButton(true);
     } else {
@@ -922,6 +922,19 @@ function loadAndRun() {
         return;
     }
 
+    console.log('WebGL version: ', gl.getParameter(gl.VERSION));
+    console.log('WebGL vendor : ', gl.getParameter(gl.VENDOR));
+    console.log('WebGL supported extensions: ', gl.getSupportedExtensions());
+
+    depthTextureExtension = gl.getExtension('WEBGL_depth_texture');
+    if (!depthTextureExtension) {
+        console.log('This WebGL program requires the use of the ' +
+            'WEBGL_depth_texture extension. This extension is not supported ' +
+            'by your browser, so this WEBGL program is terminating.');
+        return;
+    }
+
+
     // loading jumpmans 
     initResource(gl).then(() => {
         // loadingInterface(); // Starting the interface with the loading phase
@@ -940,12 +953,12 @@ function clearFrame(gl) {
     // Tell WebGL how to convert from clip space to pixels
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
+    // enable culling face and depth test
     gl.enable(gl.CULL_FACE);
     gl.enable(gl.DEPTH_TEST);
 
     // Clear the canvas AND the depth buffer.
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
 }
 
 /**
@@ -971,6 +984,13 @@ async function runSelectCharScene() {
 
     skyboxProgramInfo = webglUtils.createProgramInfo(
         gl, ["skybox-vs", "skybox-fs"]);
+
+
+    // ================================
+    //          Color Program 
+    // ================================
+    colorProgramInfo = webglUtils.createProgramInfo(gl, ["color-vs", "color-fs"]);
+
 
     // Skybox BufferInfo
     quadBufferInfo = createXYQuadBufferInfo(gl);
@@ -1029,12 +1049,13 @@ async function runSelectCharScene() {
             u_lightDirection: m4.normalize([0.5, 1, 1]), // direction of the source light
             u_view: viewMatrix,
             u_projection: projectionMatrix,
+            isShadow : isShadow ? 1 : 0,
             u_viewWorldPosition: cameraPosition,
             ambient: lightAmbient,
             diffuse: lightDiffuse,
             specular: lightSpecular,
             u_ambientLight: ambientLight,
-            shiness: 150,
+            shiness: lightShiness,
         };
 
         // draw Jumpman  
@@ -1062,9 +1083,10 @@ async function runSelectCharScene() {
  * @param {*} gl 
  */
 function initGameScene(gl) {
-    if(textCanvas) toggleListener(textCanvas);
+    if (textCanvas) toggleListener(textCanvas);
+    initInterfaceGUI();
     // initial camera positioon
-    D = 20;
+    D = 40;
     theta = degToRad(90);
     phi = degToRad(45);
     cameraAngle = degToRad(0)
@@ -1080,32 +1102,113 @@ function checkGameOver() {
         textContext ? textContext.clearRect(0, 0, textContext.canvas.width, textContext.canvas.height) : null;
         textContext.font = '1.75rem Titan One';
         textContext.fillStyle = 'white';
-        textContext.fillText('Score: ' + coinPoint + ' - Game Over! ', 160, 150);
+        textContext.fillText('Score: ' + coinPoint + ' - Game Over! ', gl.canvas.width / 2, 150);
         return true;
     } else return false;
 }
 
-/**
- * Frame Drawing 
- */
-function drawGameScene(time) {
 
+function initShadowTexture() {
 
-    // check if mobile or not 
+    depthTexture = gl.createTexture();
+    depthTextureSize = 512;
+    gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+    gl.texImage2D(
+        gl.TEXTURE_2D,      // target
+        0,                  // mip level
+        gl.DEPTH_COMPONENT, // internal format
+        depthTextureSize,   // width
+        depthTextureSize,   // height
+        0,                  // border
+        gl.DEPTH_COMPONENT, // format
+        gl.UNSIGNED_INT,    // type
+        null);              // data
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    depthFramebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
+    gl.framebufferTexture2D(
+        gl.FRAMEBUFFER,       // target
+        gl.DEPTH_ATTACHMENT,  // attachment point
+        gl.TEXTURE_2D,        // texture target
+        depthTexture,         // texture
+        0);                   // mip level
+
+    // create a color texture of the same size as the depth texture
+    // see article why this is needed_
+    unusedTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, unusedTexture);
+    gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        depthTextureSize,
+        depthTextureSize,
+        0,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        null,
+    );
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    // attach it to the framebuffer
+    gl.framebufferTexture2D(
+        gl.FRAMEBUFFER,        // target
+        gl.COLOR_ATTACHMENT0,  // attachment point
+        gl.TEXTURE_2D,         // texture target
+        unusedTexture,         // texture
+        0);                    // mip level
+
+}
+
+function renderGameScene(time) {
+
+    // mobile adaptation
     checkMobileSize();
 
-    // convert to seconds
+    // time frame
     time *= 0.001;
-
-    // Subtract the previous time from the current time
     deltaTime = time - then;
-    // Remember the current time for the next frame.
     then = time;
 
+    // clear frame and buffers
     clearFrame(gl);
 
     // Update zoom and angle of camera 
     zoomUpdate();
+
+    aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+
+    const lightWorldMatrix = m4.lookAt(lightPosition, lightTarget, up);
+    const lightProjectionMatrix = m4.perspective(degToRad(lightAngle), aspect, lightNear, lightFar);
+
+    // binding frame buffer to save depth of pixels related to the shadow rendering
+    gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
+    gl.viewport(0, 0, depthTextureSize, depthTextureSize);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    drawGameScene(time, lightProjectionMatrix, lightWorldMatrix, m4.identity(), lightWorldMatrix, colorProgramInfo)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.clearColor(0, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+
+    // texture related to the shadow rendering
+    let textureMatrix = m4.identity();
+    textureMatrix = m4.translate(textureMatrix, 0.5, 0.5, 0.5);
+    textureMatrix = m4.scale(textureMatrix, 0.5, 0.5, 0.5);
+    textureMatrix = m4.multiply(textureMatrix, lightProjectionMatrix);
+    // we use the inverse light world matrix to render the position in the world space for the shadows
+    textureMatrix = m4.multiply(
+        textureMatrix,
+        m4.inverse(lightWorldMatrix));
 
     // redefine matrices 
     projectionMatrix =
@@ -1117,8 +1220,6 @@ function drawGameScene(time) {
     D * Math.sin(phi) * Math.sin(phi),
     D * Math.cos(phi)];
 
-    target = [0, 0, 0];
-    up = [0, 1, 0];
     // Compute the camera's matrix using look at.
     cameraMatrix = m4.lookAt(cameraPosition, target, up);
 
@@ -1139,22 +1240,7 @@ function drawGameScene(time) {
     viewDirectionProjectionInverseMatrix =
         m4.inverse(viewDirectionProjectionMatrix);
 
-
-    // update sharedUniforms for the platform
-    sharedUniforms = {
-        u_lightDirection: m4.normalize([0, 0.2, 0]), // direction of the source light
-        u_view: viewMatrix,
-        u_projection: projectionMatrix,
-        u_viewWorldPosition: cameraPosition,
-        ambient: lightAmbient,
-        diffuse: lightDiffuse,
-        specular: lightSpecular,
-        u_ambientLight: ambientLight,
-        shiness: 150,
-    };
-
-
-    // ======== Collisions ===========
+    drawGameScene(time, projectionMatrix, cameraMatrix, textureMatrix, lightWorldMatrix, envProgramInfo);
 
     // check pltform collision
     checkPlatformCollisions();
@@ -1165,12 +1251,48 @@ function drawGameScene(time) {
     // obstacles collisions
     checkObstacleCollision(time);
 
+    // draw 2D text
+    draw2DContent();
 
-    //draw platform 
-    drawPlatform(gl, envProgramInfo, sharedUniforms, platform.p, platform.offset, platformTranslation);
+    // draw Frustum
+    if (isFrustum) {
+        drawFrustum(gl, colorProgramInfo, cameraMatrix, lightWorldMatrix, lightProjectionMatrix)
+    }
+
+    // check if there is a game over, in this situation, we will not refresh the frame because the game ends and give the player the possible to restart toggling the play button again.
+    if (checkGameOver()) {
+        return;
+    } else {
+        // animation frame iteration
+        requestAnimationFrame(renderGameScene);
+    }
+}
+
+
+function drawGameScene(time, projectionMatrix, cameraMatrix, textureMatrix, lightWorldMatrix, programInfo) {
+
+    const viewMatrix = m4.inverse(cameraMatrix);
+    gl.useProgram(programInfo.program);
+
+    sharedUniforms = {
+        u_view: viewMatrix,
+        u_projection: projectionMatrix,
+        u_bias: -0.0100,
+        isShadow: isShadow ? 1 : 0,
+        u_textureMatrix: textureMatrix,
+        u_projectedTexture: depthTexture,
+        u_reverseLightDirection: lightWorldMatrix.slice(8, 11),
+        ambient: lightAmbient,
+        diffuse: lightDiffuse,
+        specular: lightSpecular,
+        u_ambientLight: ambientLight,
+        shiness: lightShiness,
+    };
+
+    // draw coins
     for (let i = 0; i < coinPosition.length; i++) {
         if (!coinHit[i])
-            drawCoin(gl, envProgramInfo, sharedUniforms, coin.p, coin.offset, time, coinPosition[i][0], coinPosition[i][1], coinPosition[i][2]);
+            drawCoin(gl, programInfo, sharedUniforms, coin.p, coin.offset, time, coinPosition[i][0], coinPosition[i][1], coinPosition[i][2]);
     }
 
     // update the obstales positions and appearances
@@ -1179,76 +1301,107 @@ function drawGameScene(time) {
     // draw obstacles
     for (let i = 0; i < obstaclePosition.length; i++) {
         if (obstacleAppearance[i])
-            drawObstacle(gl, envProgramInfo, sharedUniforms, obstacle.p, obstacle.offset, 0, obstaclePosition[i][0], obstaclePosition[i][1], obstaclePosition[i][2]);
+            drawObstacle(gl, programInfo, sharedUniforms, obstacle.p, obstacle.offset, 0, obstaclePosition[i][0], obstaclePosition[i][1], obstaclePosition[i][2]);
     }
-
-
 
     // update the position of the jumpman according to the key pressed in the frame
     // draw body of the Jumpman
     updateJumpmanMove(time); // for the general movement according to the world
     updateStep(time)
 
-    // draw Jumpman body
-    drawGameJumpman(gl, envProgramInfo, sharedUniforms, body, feet, jumpmanRotation, jumpmanPosition, jumpmanScale);
+    // draw Jumpman
+    drawGameJumpman(gl, programInfo, sharedUniforms, body, feet, jumpmanRotation, jumpmanPosition, jumpmanScale);
+    drawFeet(gl, programInfo, sharedUniforms, rightFeet, jumpmanRotation, jumpmanPosition, 1);
+    drawFeet(gl, programInfo, sharedUniforms, leftFeet, jumpmanRotation, jumpmanPosition, 0);
 
-    // draw feets of the Jumpman according to the step orientation and body position
-    drawFeet(gl, envProgramInfo, sharedUniforms, rightFeet, jumpmanRotation, jumpmanPosition, 1);
-    drawFeet(gl, envProgramInfo, sharedUniforms, leftFeet, jumpmanRotation, jumpmanPosition, 0);
+    // draw Drone
+    drawDrone(gl, programInfo, sharedUniforms, drone, propeller, time)
 
+    // draw Cloud
+    drawCloud(gl, programInfo, sharedUniforms, cloud, platformTranslation)
+
+
+    // draw platform 
+    drawPlatform(gl, programInfo, sharedUniforms, platform.p, platform.offset, platformTranslation);
 
 
     // draw Skybox
     drawSkybox(gl, skyboxProgramInfo, quadBufferInfo, viewDirectionProjectionInverseMatrix, texture);
 
 
-    // changing uniforms for the cloud light
+}
 
-    drawDrone(gl, envProgramInfo, sharedUniforms, drone, propeller, time)
-
-    sharedUniforms = {
-        u_lightDirection: m4.normalize([0, 0.2, 0]), // direction of the source light
-        u_view: viewMatrix,
-        u_projection: projectionMatrix,
-        u_viewWorldPosition: cameraPosition,
-        ambient: [0.8, 0.8, 0.8],
-        diffuse: [1, 1, 1],
-        specular: [1, 1, 1],
-        u_ambientLight: [0.4, 0.4, 0.4],
-        shiness: 150,
-    };
-    drawCloud(gl, envProgramInfo, sharedUniforms, cloud, platformTranslation)
-
-    // draw the text for the score and life
-    /*to manage text on canvas and webgl */
+function draw2DContent() {
     textContext.font = '1.75rem Titan One';
     textContext.fillStyle = 'white';
     textContext.fillText('Score: ' + coinPoint + ' - Life: ' + life, 160, 150);
+}
 
-    // check if there is a game over, in this situation, we will not refresh the frame because the game ends and give the player the possible to restart toggling the play button again.
-    if (checkGameOver()) {
-        return;
-    } else {
-        // animation frame iteration
-        requestAnimationFrame(drawGameScene)
-    }
+function drawFrustum(gl, programInfo, cameraMatrix, lightWorldMatrix, lightProjectionMatrix) {
+
+    const cubeLinesBufferInfo = webglUtils.createBufferInfoFromArrays(gl, {
+        position: [
+            -1, -1, -1,
+            1, -1, -1,
+            -1, 1, -1,
+            1, 1, -1,
+            -1, -1, 1,
+            1, -1, 1,
+            -1, 1, 1,
+            1, 1, 1,
+        ],
+        indices: [
+            0, 1,
+            1, 3,
+            3, 2,
+            2, 0,
+
+            4, 5,
+            5, 7,
+            7, 6,
+            6, 4,
+
+            0, 4,
+            1, 5,
+            3, 7,
+            2, 6,
+        ],
+    });
+    const viewMatrix = m4.inverse(cameraMatrix);
+
+    gl.useProgram(programInfo.program);
+
+    // Setup all the needed attributes.
+    webglUtils.setBuffersAndAttributes(gl, programInfo, cubeLinesBufferInfo);
+
+    // scale the cube in Z so it's really long
+    // to represent the texture is being projected to
+    // infinity
+    const mat = m4.multiply(
+        lightWorldMatrix, m4.inverse(lightProjectionMatrix));
+
+    // Set the uniforms we just computed
+    webglUtils.setUniforms(programInfo, {
+        u_color: [1, 1, 1, 1],
+        u_view: viewMatrix,
+        u_projection: projectionMatrix,
+        u_world: mat,
+    });
+
+    // calls gl.drawArrays or gl.drawElements
+    webglUtils.drawBufferInfo(gl, cubeLinesBufferInfo, gl.LINES);
 }
 
 
-
 /**
- * Start Game Scene 
+ * Start Game Scene, clear frame and starting elements and start the animation.
  */
 
 function startGameScene() {
-    // Remove Starting Scene Buttons
     toggleStartButtons();
-    // starting resize and viewport reference space
-
-    // modify metadata
     initGameScene(gl);
-
-    requestAnimationFrame(drawGameScene);
+    initShadowTexture();
+    requestAnimationFrame(renderGameScene);
 }
 // Load Scene on loading state
 window.onload = loadAndRun;

@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv=”Pragma” content=”no-cache”>
     <meta http-equiv=”Cache-Control” content=”no-cache”>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
@@ -29,16 +29,16 @@
             <button id="play-button" class="inner-button center"><span>PLAY</span></button>
             <div id="mobile-buttons">
                 <button id="a-key"><span class="material-symbols-outlined">
-                    arrow_back
+                        arrow_back
                     </span></button>
                 <button id="w-key"><span class="material-symbols-outlined">
-                    arrow_upward
+                        arrow_upward
                     </span></button>
                 <button id="s-key"><span class="material-symbols-outlined">
-                    arrow_downward
+                        arrow_downward
                     </span></button>
                 <button id="d-key"><span class="material-symbols-outlined">
-                    arrow_forward
+                        arrow_forward
                     </span></button>
             </div>
             <div class="commands">
@@ -65,10 +65,12 @@
         uniform mat4 u_projection;
         uniform mat4 u_view;
         uniform mat4 u_world;
+        uniform mat4 u_textureMatrix;
         uniform vec3 u_viewWorldPosition;
       
         varying vec3 v_normal;
         varying vec3 v_surfaceToView;
+        varying vec4 v_projectedTexcoord;
         varying vec2 v_texcoord;
         varying vec4 v_color;
       
@@ -84,6 +86,8 @@
           v_texcoord = a_texcoord;
           // coplor
           v_color = a_color;
+
+          v_projectedTexcoord = u_textureMatrix * worldPosition;
         }
     </script>
 
@@ -95,25 +99,44 @@
         varying vec3 v_surfaceToView;
         varying vec2 v_texcoord;
         varying vec4 v_color;
+        varying vec4 v_projectedTexcoord;
 
         uniform vec3 diffuse;
         uniform sampler2D diffuseMap;
+        uniform sampler2D u_projectedTexture;
+        uniform float u_bias; 
+        uniform vec3 u_reverseLightDirection;
+
+
         uniform vec3 ambient;
         uniform vec3 emissive;
         uniform vec3 specular;
-        uniform float shininess;
         uniform float opacity;
         uniform vec3 u_lightDirection;
         uniform vec3 u_ambientLight;
+        uniform int isShadow;
 
         void main () {
             vec3 normal = normalize(v_normal);
 
+            float light = dot(normal, u_reverseLightDirection);
+            vec3 projectedTexcoord = v_projectedTexcoord.xyz / v_projectedTexcoord.w;
+            float currentDepth = projectedTexcoord.z + u_bias;
+            bool inRange =
+            projectedTexcoord.x >= 0.0 &&
+            projectedTexcoord.x <= 1.0 &&
+            projectedTexcoord.y >= 0.0 &&
+            projectedTexcoord.y <= 1.0;
+              // the 'r' channel has the depth values
+            float projectedDepth = texture2D(u_projectedTexture, projectedTexcoord.xy).r;
+            float shadowLight = (inRange && projectedDepth <= currentDepth) ? 0.3 : 1.0;
+
+
             vec3 surfaceToViewDirection = normalize(v_surfaceToView);
-            vec3 halfVector = normalize(u_lightDirection + surfaceToViewDirection);
+            vec3 halfVector = normalize(u_reverseLightDirection+ surfaceToViewDirection);
 
             // light in the clipped space (imitation)
-            float fakeLight = dot(u_lightDirection, normal) * .5 + .5;
+            float fakeLight = clamp(dot(u_lightDirection, normal), 0.0, 1.0);
             // specular light
             float specularLight = clamp(dot(normal, halfVector), 0.0, 1.0);
 
@@ -124,14 +147,24 @@
             // opacity given by the a value of the diffuse map color and base fragment color
             float effectiveOpacity = opacity * diffuseMapColor.a * v_color.a;
 
-            // coloration
-            gl_FragColor = vec4(
-                emissive +
-                ambient * u_ambientLight +
-                effectiveDiffuse * fakeLight,
-                //specular * pow(specularLight, shininess),
-                effectiveOpacity);
+            
+            // coloration with shadow
+            if(isShadow == 1){
+                gl_FragColor = vec4(
+                    emissive +
+                    ambient * u_ambientLight +
+                    effectiveDiffuse * fakeLight * shadowLight,
+                    effectiveOpacity);
+                
+            } else {
+                gl_FragColor = vec4(
+                    emissive +
+                    ambient * u_ambientLight +
+                    effectiveDiffuse * fakeLight,
+                    effectiveOpacity);
+                
             }
+        }
     </script>
 
     <!-- ============== SkyBox ================ -->
@@ -158,6 +191,32 @@
         vec4 t = u_viewDirectionProjectionInverse * v_position;
         gl_FragColor = textureCube(u_skybox, normalize(t.xyz / t.w));
     }   
+    </script>
+
+
+    <!-- ============== Color ================ -->
+
+    <!-- Vertex Shader -->
+    <script id="color-vs" type="x-shader/x-vertex">
+        attribute vec4 a_position;
+
+        uniform mat4 u_projection;
+        uniform mat4 u_view;
+        uniform mat4 u_world;
+
+        void main() {
+        // Multiply the position by the matrices.
+        gl_Position = u_projection * u_view * u_world * a_position;
+        }
+        </script>
+    <!-- Fragment shader -->
+    <script id="color-fs" type="x-shader/x-fragment">
+        precision mediump float;
+
+        uniform vec4 u_color;
+        void main() {
+        gl_FragColor = u_color;
+        }
     </script>
 
     <!-- Local Resources -->

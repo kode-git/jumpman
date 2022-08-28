@@ -181,7 +181,5 @@ function createCubeVertices(size) {
     };
 }
 
-
-
 const createCubeBufferInfo = createBufferInfoFunc(createCubeVertices)
 const createXYQuadBufferInfo = createBufferInfoFunc(createXYQuadVertices)

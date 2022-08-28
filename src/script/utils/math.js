@@ -4,7 +4,7 @@
  * @param {number} value is the numerical parameter 
  * @returns {boolean} true if is power of 2, false otherwise
  */
-function isPowerOf2(value){
+function isPowerOf2(value) {
     return Math.log2(value) % 1 === 0;
 }
 
@@ -13,7 +13,7 @@ function isPowerOf2(value){
  * @param {number} deg is the current degree value
  * @returns {number} is the radiant converted value
  */
-function degToRad(deg){
+function degToRad(deg) {
     return deg * Math.PI / 180;
 }
 
@@ -22,7 +22,7 @@ function degToRad(deg){
  * @param {number} rad is the current radiant value
  * @returns  {number} is the degree converted value
  */
-function radToDeg(rad){
+function radToDeg(rad) {
     return rad * 180 / Math.PI;
 }
 
@@ -34,16 +34,16 @@ function radToDeg(rad){
  */
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
-  }
+}
 
 
-  /**
-   * Return an integer random value between min and max
-   * @param {number} min is the minimum value
-   * @param {number} max is the maximum value
-   * @returns a random vsalue between min and max
-   */
-function getRandomInteger(min, max){
+/**
+ * Return an integer random value between min and max
+ * @param {number} min is the minimum value
+ * @param {number} max is the maximum value
+ * @returns a random vsalue between min and max
+ */
+function getRandomInteger(min, max) {
     return Math.floor(getRandomArbitrary(min, max));
 }
 
@@ -54,7 +54,7 @@ function getRandomInteger(min, max){
  * @param {*} max is the maximum value
  * @returns 
  */
-function isBetween(value, min, max){
+function isBetween(value, min, max) {
     return value >= min && value <= max;
 }
 
@@ -67,5 +67,5 @@ function isBetween(value, min, max){
 function distance(rect, p) {
     var dx = Math.max(rect.min.x - p.x, 0, p.x - rect.max.x);
     var dy = Math.max(rect.min.y - p.y, 0, p.y - rect.max.y);
-    return Math.sqrt(dx*dx + dy*dy);
-  }
+    return Math.sqrt(dx * dx + dy * dy);
+}

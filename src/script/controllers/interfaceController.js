@@ -40,6 +40,16 @@ var wKey, aKey, sKey, dKey;
 // mobile keyboard
 var mobile;
 
+// initial Light Position and Angle for perspective illuminance
+var lightPosition = [0, 15.0, 26.0];
+var lightAngle = 50; // must be in degree
+var lightNear = 10;
+var lightFar = 200;
+var lightTarget = [0, 0, -10];
+
+// display frustum
+var isFrustum = false;
+
 // modern Chrome requires { passive: false } when adding event
 var supportsPassive = false;
 try {
@@ -54,9 +64,19 @@ try {
 // control GUI
 var gui = new dat.GUI();
 var controls = {
-    D : 7,
-    Shadow : false,
-    Image : false,
+    D : 40,
+    shadow : false,
+    image : false,
+    frustum: false,
+    lightX : lightPosition[0],
+    lightY : lightPosition[1],
+    lightZ : lightPosition[2],
+    lightTargetX : lightTarget[0],
+    lightTargetY : lightTarget[1],
+    lightTargetZ : lightTarget[2],
+    angleLight : lightAngle,
+    lightNear : lightNear,
+    lightFar : lightFar,
 }
 /**
  * Remove a default event action
@@ -183,17 +203,50 @@ function initButtonControllers(){
 
 
 function initInterfaceGUI(){
-    gui.add(controls, "D").min(5).max(50).step(1).onChange(()=>{
+    gui.add(controls, "D").min(0).max(100).step(1).onChange(()=>{
         D = controls.D;
     })
-    gui.add(controls, "Shadow")
-    gui.add(controls, "Image").onChange(()=>{
+    gui.add(controls, "shadow").onChange(()=>{
+        isShadow = !isShadow;
+    })
+    gui.add(controls, "image").onChange(()=>{
         initPreviewController();
     });
+    gui.add(controls, "frustum").onChange(()=>{
+        isFrustum = !isFrustum;
+    })
+    gui.add(controls, "lightX").min(-10).max(40).step(0.1).onChange(()=>{
+        lightPosition[0] = controls.lightX;
+    })
+    gui.add(controls, "lightY").min(-10).max(40).step(0.1).onChange(()=>{
+        lightPosition[1] = controls.lightY;
+    })
+    gui.add(controls, "lightZ").min(-10).max(40).step(0.1).onChange(()=>{
+        lightPosition[2] = controls.lightZ;
+    })
+    gui.add(controls, "lightTargetX").min(-10).max(40).step(0.1).onChange(()=>{
+        lightTarget[0] = controls.lightTargetX;
+    })
+    gui.add(controls, "lightTargetY").min(-10).max(40).step(0.1).onChange(()=>{
+        lightTarget[1] = controls.lightTargetY;
+    })
+    gui.add(controls, "lightTargetZ").min(-10).max(40).step(0.1).onChange(()=>{
+        lightTarget[2] = controls.lightTargetZ;
+    })
+    gui.add(controls, "angleLight").min(0).max(360).step(1).onChange(()=>{
+        lightAngle = controls.angleLight;
+    })
+    gui.add(controls, "lightNear").min(1).max(40).step(1).onChange(()=>{
+        lightNear = controls.lightNear;
+    })
+    gui.add(controls, "lightFar").min(0).max(200).step(1).onChange(()=>{
+        lightFar = controls.lightFar;
+    })
+
 }
+
 /**
  * Init script on load
  */
 initButtonControllers();
-initInterfaceGUI();
 disableScroll();
