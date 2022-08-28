@@ -1,5 +1,10 @@
 "use strict";
 
+//===================================================
+//              General Keywords
+//===================================================
+
+
 // Zoom keys
 var zoomKey = [false, false];
 var moveKey = [false, false, false, false]; // a w s d 
@@ -36,7 +41,9 @@ var keyDown = function(e){
     if(e.keyCode == 68) moveKey[3] = true; // d key
 }
 
-// mobile keyboard
+//===================================================
+//              Mobile Keywords
+//===================================================
 
 aKey.addEventListener('touchstart', function(e){
     moveKey[0] = true;    

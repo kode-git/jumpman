@@ -125,39 +125,12 @@ function initPreviewController() {
     }
 }
 
-function initAudio() {
-    soundtrack = new Audio('someSound.ogg');
-    if (typeof sountrack.loop == 'boolean') {
-        soundtrack.loop = true;
-    }
-    else {
-        soundtrack.addEventListener('ended', function () {
-            this.currentTime = 0;
-            this.play();
-        }, false);
-    }
-    soundtrack.play();
-}
-
 /**
  * Redirect to the index.html
  */
 function linkInfo() {
     startGame = false;
     window.location.replace('./index.html');
-}
-
-/**
- * Toggle of audio file in background play.
- */
-function audioToggle() {
-    if(soundtrack.loop){
-        soundtrack.loop = false;
-        soundtrack.stop();
-    } else {
-        soundtrack.loop = true;
-        soundtrack.play();
-    }
 }
 
 /**
@@ -178,6 +151,10 @@ function toggleStartButtons() {
     }
 }
 
+/**
+ * Adding mobile commands into the display
+ * @param {*} isMobile is the value that define if the device is mobile or not
+ */
 function toggleMobileButton(isMobile) {
     if (!isMobile) {
         mobile = document.getElementById('mobile-buttons');
@@ -190,12 +167,6 @@ function toggleMobileButton(isMobile) {
  * Main function.
  */
 function initButtonControllers() {
-    /*
-    audio = document.getElementById('audio');
-    preview = document.getElementById('preview');
-    shadow = document.getElementById('shadow');
-    info = document.getElementById('info');
-    */
 
     objects = document.getElementsByClassName('object');
     play = document.getElementById('play-button');
@@ -218,6 +189,9 @@ function initButtonControllers() {
 }
 
 
+/**
+ * Initialize the GUI interface provided by dat.GUI, it is available only in the game session
+ */
 function initInterfaceGUI() {
     gui.add(controls, "D").min(0).max(100).step(1).onChange(() => {
         D = controls.D;
@@ -265,5 +239,4 @@ function initInterfaceGUI() {
  * Init script on load
  */
 initButtonControllers();
-initAudio();
 disableScroll();

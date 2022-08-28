@@ -1,10 +1,13 @@
 
+//===================================================
+//              Main script for the Game
+//===================================================
 
 
 /*
-====================================
-        Common Variables List
-====================================
+============================================
+        Global Variables Declarations
+===========================================
 */
 
 var gl, canvas, textCanvas, textContext;
@@ -174,7 +177,6 @@ var mouseToggle = true;
           SelectChar Scene 
 ====================================
 */
-
 
 /**
  * Pre-loading of resources for faster game
@@ -900,7 +902,9 @@ function checkObstacleCollision(time) {
 ====================================
 */
 
-
+/**
+ * Checking and change the display mode according to the nature of the device (mobile or not)
+ */
 function checkMobileSize() {
     if (window.innerHeight < 500 && window.innerWidth < 900) {
         // it is mobile
@@ -911,6 +915,11 @@ function checkMobileSize() {
 }
 
 
+/**
+ * This is the main script, here start the game rendering after loading 
+ * resources from the local file system (file .obj and relative .mtl)
+ * @returns 
+ */
 function loadAndRun() {
     // Get A WebGL context
     /** @type {HTMLCanvasElement} */
@@ -922,10 +931,12 @@ function loadAndRun() {
         return;
     }
 
+    // Warning: Development in WebGL v.1
     console.log('WebGL version: ', gl.getParameter(gl.VERSION));
     console.log('WebGL vendor : ', gl.getParameter(gl.VENDOR));
     console.log('WebGL supported extensions: ', gl.getSupportedExtensions());
 
+    // checking the depth texture extension for shadows
     depthTextureExtension = gl.getExtension('WEBGL_depth_texture');
     if (!depthTextureExtension) {
         console.log('This WebGL program requires the use of the ' +
@@ -1108,6 +1119,9 @@ function checkGameOver() {
 }
 
 
+/**
+ * Initialize the depthTexture, depthFramebuffer and unusedTexture for the shadow management 
+ */
 function initShadowTexture() {
 
     depthTexture = gl.createTexture();
@@ -1166,6 +1180,11 @@ function initShadowTexture() {
         0);                    // mip level
 }
 
+/**
+ * Rendering of the Game scene
+ * @param {} time is the time
+ * @returns in case of error or gameover
+ */
 function renderGameScene(time) {
 
     // mobile adaptation
@@ -1343,12 +1362,23 @@ function drawGameScene(time, projectionMatrix, cameraMatrix, textureMatrix, ligh
 
 }
 
+/**
+ * Draw the 2D Content for the score during the game
+ */
 function draw2DContent() {
     textContext.font = '1.20rem Titan One';
     textContext.fillStyle = 'white';
     textContext.fillText('Score: ' + coinPoint + ' - Life: ' + life, textCanvas.width / 4, 40);
 }
 
+/**
+ * Draw frustum of the light 
+ * @param {} gl is the WebGL context
+ * @param {*} programInfo is the GLSL program
+ * @param {*} cameraMatrix is the camera matrix 
+ * @param {*} lightWorldMatrix is the light in the world space
+ * @param {*} lightProjectionMatrix is the projection of the light into the world space
+ */
 function drawFrustum(gl, programInfo, cameraMatrix, lightWorldMatrix, lightProjectionMatrix) {
 
     const cubeLinesBufferInfo = webglUtils.createBufferInfoFromArrays(gl, {
@@ -1415,6 +1445,7 @@ function startGameScene() {
     initShadowTexture();
     requestAnimationFrame(renderGameScene);
 }
+
 // Load Scene on loading state
 window.onload = loadAndRun;
 window.onresize = checkMobileSize;
