@@ -1,6 +1,6 @@
 
 //===================================================
-//              Main script for the Game
+//              Main script for the game
 //===================================================
 
 
@@ -44,6 +44,8 @@ var ambientLight = [0.1, 0.1, 0.1];
 var lightAmbient = [0.2, 0.2, 0.2];
 var lightDiffuse = [0.8, 0.8, 0.8];
 var lightSpecular = [1.0, 1.0, 1.0];
+var lightEmissive = [0, 0, 0]; // no emission
+var lightOpacity = 1;
 var lightShiness = 120;
 
 // Shadow 
@@ -1065,6 +1067,8 @@ async function runSelectCharScene() {
             ambient: lightAmbient,
             diffuse: lightDiffuse,
             specular: lightSpecular,
+            emissive: lightEmissive,
+            opacity: lightOpacity,
             u_ambientLight: ambientLight,
             shiness: lightShiness,
         };
@@ -1316,6 +1320,8 @@ function drawGameScene(time, projectionMatrix, cameraMatrix, textureMatrix, ligh
         ambient: lightAmbient,
         diffuse: lightDiffuse,
         specular: lightSpecular,
+        emissive: lightEmissive,
+        opacity: lightOpacity,
         u_ambientLight: ambientLight,
         shiness: lightShiness,
     };
