@@ -18,13 +18,14 @@ La documentazione del progetto è disponibile all'interno della pagina index.htm
 ## Composizione del Progetto
 Questa tabella specifica il contenuto del codice definito dentro la cartella <i>src</i>. La grafica CSS è disponibile esternamente andando nella cartella [style](https://github.com/kode-git/Jumpman/tree/main/style) nella directory corrente.
 
-| Directory | Description |
+| Componenti| Description |
 |-|-|
 | [assets](https://github.com/kode-git/Jumpman/tree/main/src/assets) | Immagini, video, gif e sfondi utilizzati nel gioco. Non vi sono componenti legate al contesto WebGL. |
 | [models](https://github.com/kode-git/Jumpman/tree/main/src/models) | Contiene le texture, i file MTL e wavefront OBJ delle componenti del gioco caricate nel contesto WebGL. |
 | [resources](https://github.com/kode-git/Jumpman/tree/main/src/resources) | Definisce le librerie WebGL utilizzate per l'implementazione delle funzionalità grafiche |
 | [scripts](https://github.com/kode-git/Jumpman/tree/main/src/script) | Definisce gli script per la definizione geometriche delle componenti, i controlli dell'interfaccia, mouse e tasti, implementazione delle scene e funzioni matematiche di utilità per la gestione geometrica e temporale (FPS) del gioco. |
-
+| [index.html](https://github.com/kode-git/Jumpman/tree/main/index.html) | Rappresenta la documentazione ufficiale del progetto con tutti i dettagli implementativi |
+| [game.html](https://github.com/kode-git/Jumpman/tree/main/game.html) | Implementazione del file HTML di base del gioco con relativi programs shaders per la gestione delle ombre, componenti d'ambiente e skybox |
 ## Come Eseguire
 Per poter eseguire il gioco localmente, è consigliato scaricarsi l'estensione "Live Server" su Visual Studio Code e, una volta riavviato l'editor, cliccare con il tasto destro sullo script game.html o index.html e selezionare tra le opzioni "Apri con Live Server".
 
