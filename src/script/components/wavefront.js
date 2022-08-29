@@ -403,18 +403,14 @@ async function loadObjParts(gl, objHref){
       extents.min,
       m4.scaleVector(range, 0.5)),
     -1);
-
-
+    
     return {
         r : range,
         p : parts,
         offset : objOffset
     }
-    
 
 }
-
-
 function passContext(glC){
     gl = glC;
 }

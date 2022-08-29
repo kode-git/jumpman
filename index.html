@@ -18,7 +18,8 @@
                 <h1>Jump Man</h1>
                 <div class="outler-content">
                     <div class="inner-content">
-                        <h3>1. Introduzione</h3>
+                        <br>
+                        <h4>1. Introduzione</h4>
                         <p>
                             Il gioco ha come base logica quello di Fall Guy che, nel 2021, ha riscosso un gran
                             successo anche su piattaforme di streaming come Twitch o Youtube. Il progetto
@@ -28,7 +29,7 @@
                             (o con le dita per poter adattarlo ai dispositivi mobile). Il progetto è disponibile al
                             seguente <a href="game.html">link</a>.
                         </p>
-                        <h3>2. Descrizione Applicazione</h3>
+                        <h4>2. Descrizione Applicazione</h4>
                         <p>
                             Il gioco consiste in 2 scene implementate secondo una successione prefissata. La prima scena
                             rappresenta una base per visualizzare il personaggio utilizzato sul gioco, per scelta
@@ -39,89 +40,175 @@
                             ad alto livello del gioco in modo da tener presente le funzionalità di base e capire la
                             logica interna.
                         </p>
-                        <h3>2.1 Descrizione e Funzionamento del Gioco</h3>
+                        <h4>2.1 Descrizione e Funzionamento del Gioco</h4>
                         <p>
                             La scena iniziale si presenta con un illustrazione del personaggio principale e un tasto
-                            "Play".
-                            Quando il giocatore è pronto ad iniziare, avvia il gioco cliccandoci.
-                            Successivamente, il gioco inizierà andando ad illustrare una scena in cui è possibile
+                            "Play" che, cliccandolo, farà partire il gioco.
+                            Successivamente, inizierà l'animazione del gioco andando ad illustrare una scena in cui è
+                            possibile
                             muovere il
-                            personaggio (Jumpman) tramite i tasti di movimento classici (w,a, s, d) e una loro
-                            combinazione
-                            per i movimenti angolati. Lo scopo del gioco è prendere il maggior numero di monete senza
+                            personaggio (Jumpman) tramite i tasti di movimento classici (w,a, s, d) o una loro
+                            combinazione. Lo scopo del gioco è prendere il maggior numero di monete senza
                             colpire gli ostacoli. Ogni volta che il personaggio colpirà uno degli ostacoli, perderà una
-                            vita. Ad ogni partita, il giocatore avrà a disposizione 3 vite, non vi sono meccanismi in
+                            vita. Ad ogni partita, il giocatore avrà a disposizione 5 vite, non vi sono meccanismi in
                             cui
                             poter recuperare o aggiungere vite perse. All'inizio della partita verranno posizionate sul
                             pavimento, in maniera pseudo-randomica, le monete. Il giocatore dovrà raccoglierle
                             semplicemente
-                            avvicinandosi ad ogni moneta. Nel caso si raccolgano tutte le monete sul campo, il gioco
+                            avvicinandosi in modo da collidere. Nel caso si raccolgano tutte le monete sul campo, il
+                            gioco
                             prevede
-                            un redrop in altre posizioni pseudo-casuali. La partita termina quando il giocatore avrà
-                            terminato le sue vite. Ogni moneta acquisita, sarà un punto in più sullo score totale
-                            mostrato tramite grafica 2D all'interno del canvas sullo schermo.
+                            un redrop casuale nelle coordinate della piattaforma. La partita termina quando il giocatore
+                            avrà
+                            perso tutte le sue vite. Il numero di monete, di vite e lo stato di gioco viene visualizzato
+                            all'interno del canvas utilizzando il contesto 2D.
                         </p>
-                        <h3>3. Scelte Progettuali</h3>
+                        </p>
+                        <h4>3. Scelte Progettuali</h4>
                         <p>
                             All'interno di questa sezione andremo a definire delle scelte progettuali inerente al codice
                             utilizzato per la programmazione del gioco.
                         </p>
 
-                        <h3>3.1 Caricamento Componenti </h3>
+                        <h4>3.1 Caricamento Componenti</h4>
                         <p>
                             Il caricamento dei modelli segue la formattazione di file wavefront .OBJ andando a caricarne
-                            le varie parti (facce) partendo dalle coordinate dei suoi vertici e i
-                            materiali annessi. Tutti i modelli sono stati realizzati da 0 o a partire da dei modelli
-                            pre-esistenti su internet. In entrambi i casi, vi sono state effettuate delle modifiche in
+                            le varie parti (facce) partendo dalle coordinate dei suoi vertici insieme ai
+                            materiali annessi (opportunatamente definiti in file .MTL linkati all'interno del documento
+                            .OBJ). Tutti i modelli sono stati realizzati da 0 o a partire da dei modelli
+                            pre-esistenti su Blender 3.0. In entrambi i casi, vi sono state effettuate delle modifiche
+                            in
                             modo da poter determinare una loro corretta animazione all'interno della scena. Tutti i file
                             blender, successivamente alle modifiche, sono state esportate in file .OBJ in modo da
-                            poterli caricare correttamente durante il rendering della scena. Nella scena è presente
-                            anche una skybox che, a differenza degli altri componenti della scena, è rappresentata da un
-                            cubo massiizzandone la profondità su ogni faccia e, successivamente, applicando una texture
-                            per garantire il background della scena.
+                            poterli caricare correttamente durante l'inizializzazione della scena. Nella scena è
+                            presente
+                            anche una skybox che, a differenza degli altri componenti, è rappresentata da una
+                            cubemap.<br><br>
+                            <b>Importante:</b> nel caricamento di game.html bisogna attendere qualche secondo per
+                            permettere allo script principale di caricare tutti i file .obj e .mtl utilizzati nel gioco.
+                            Il caricamento sarà completato quando si visualizzerà il modello del Jumpman ruotare
+                            all'interno della scena iniziale.
                         </p>
-                        <h3>3.2 Animazioni</h3>
+                        <h4>3.2 Animazioni</h4>
                         <p>
-                            Le animazioni sono proprie per componente, sono state effettuate delle modifiche sulle
-                            coordinate dei vertici della world matrix. Nello specifico, ciò che si è fatti è andare a
+                            Le animazioni sono definite in dipendenza del tipo di componente e raffigurano
+                            delle trasformazioni di vista tridimensionali (scaling, transazioni o rotazioni) sulla
+                            world matrix. Nello specifico, ciò che si è fatti è andare a
                             definire delle matrici di translazione, rotazione e, in alcuni casi, di scaling che possono
                             variare al click di un tasto (nel caso dell'animazione del movimento del Jumpman), secondo
                             una fase temporale (movimento degli ostacoli, rotazione delle monete e del drone con
                             l'immagine dell'autore), oppure condizionata (hitting degli ostacoli da parte del Jumpman).
-                            Per garantire una corretta animazione del personaggio principale durante il movimento, si è
-                            pensato di simularne un movimento simile a quelle dei pinguini nei film; ossia un movimento
-                            laterale del corpo e un veloce passo da parte dei piedi. Per poter realizzare tale effetto,
+                            Per garantire una corretta animazione del personaggio principale, si è
+                            pensato di simularne un movimento simile a quelle dei pinguini; ossia un movimento
+                            laterale del corpo e un passo breve e veloce da parte dei piedi. Per poter realizzare tale
+                            effetto,
                             i modelli blender, e i rispettivi file .OBJ esportati, sono stati divisi in 3 componenti
                             separate: piede sinistro, piede destro e corpo. Mentre il corpo avrà una rotazione sull'asse
                             laterale, i piedi avranno una rotazione sincronizzata e opposta in modo da simulare il passo
-                            in avanti). Per compiere un corretto orientamento del personaggio, si effettusa una
+                            in avanti). Per compiere un corretto orientamento del personaggio, si effettua una
                             rotazione al click di uno dei tasti del movimento (w, a, s, d) in modo tale da far si che
                             l'animazione del corpo e dei piedi sia orientata secondo la direzione del movimento. Nella
-                            scena sono presenti animazioni più semplici che prevedono semplici rotazioni: elica del
-                            drone, translazione verticale del drone per simulare la fluttuazione, rotazione delle
+                            scena sono presenti trasformazioni più semplici che prevedono semplici variazioni: rotazione
+                            dell'elica del
+                            drone, translazione verticale dell'immagine e del corpo del drone per simulare la
+                            fluttuazione, rotazione delle
                             monete.
                         </p>
-                        <h3>3.3 Luci</h3>
+                        <h4>3.3 Luci</h4>
                         <p>
-                            Uno degli elementi su cui si è prestata maggiore attenzione sono le luci. Sia per quanto
-                            riguarda la gestione della luce ambientale, diffusa e speculare di una sorgente principale
-                            che ha lo scopo di illuminazione principale dell'intera scena e sia da parte di una luce secondaria che definisce le ombre,
-                            con opportuna attivazione e disattivazione dal pannello di controllo. In questa sezione, andremo ad analizzare tutte le
-                            tecniche e le procedure per la gestione delle luci. 
+                            L'illuminazione segue il modello di Phong, andando a definire una luce ambientale legata
+                            alla sorgente luminosa di base che va ad irradiare l'intera scena e una riflessione
+                            puntiforme data dalla combinazione di luce diffusa e speculare. I parametri sono gestiti in
+                            maniera prefissata ed immutabili all'interno del programma, utilizzandone i valori per ogni
+                            oggetto nelle due scene.
+                            Data la presenza di texture, l'algoritmo di illuminazione di Phong è stato adattato per il
+                            texture mapping.
                             <br>
-                            L'illuminazione segue il modello di Phong, andando a definire una luce ambientale di base
-                            
-
                         </p>
-                        <h3>Disclaimer</h3>
+                        <h4>3.4 Ombre</h4>
                         <p>
-                            L'utilizzo del progetto è solo per scopi accademici, non si autorizza da Fall Guy l'utilizzo
-                            commerciale di immagini e contenuti sotto copyright se non per scopi didattici, non è stato
-                            utilizzato nessun codice sorgente sviluppato da Mediatonic Games. Per
-                            ulteriori informazione o possibili utilizzi del progetto, contattare <a
-                                href="https://www.mediatonicgames.com">Mediatonic Games</a>. Non si assumono
-                            responsabilità per nessun tipo di utilizzo o applicazine parziale o totale del codice
-                            scritto per scopi esterni a quelli accademici.
+                            Per poter definire le ombre, si è pensato di utilizzare come tecnica principale quella dello
+                            shadow buffer. Essenzialmente, all'interno della scena di gioco principale, si rende la
+                            scena dal punto di vista della sorgente luminosa, si applica la fase di registrazione dei
+                            valori di profondità sul depth buffer (senza renderizzazione) per poi definire i valori
+                            dello
+                            shadow buffer. Al termine, si renderizza lo z-buffer per mappare i fragment visibili secondo
+                            il punto
+                            di vista dell'osservatore (camera). Si è scelto di definire le ombre come una caratteristica
+                            opzionale configurabile all'interno del pannello di controllo del gioco. Per poterle
+                            rimuovere
+                            o aggiungere, vi è un flag usato all'interno del fragment
+                            shader del programma che definisce e gestisce i pixel delle varie componenti ambientali; in
+                            modo da determinare se il colore
+                            interpolato (gl_Color) del fragment shader deve considerare l'illuminazione di Phong con o
+                            senza le informazioni dello shadow buffer (andandone ad oscurare il valore per i pixel in
+                            ombra).
+                            <br><br>
+                            <b>Importante: </b> Le ombre sono previste solamente all'interno della scena di gioco e
+                            sono, di default, disattivate. Per poterle attivare cliccare sul flag relativo alle "shadow"
+                            nel pannello di controllo.
+                        </p>
+                        <h4>3.5 Skybox</h4>
+                        <p>
+                            Il gioco usa l'implementazione di una skybox tramite l'utilizzo di una cubemap, un tipo
+                            di texture tridimensionale. Ogni faccia ha un riferimento bidimensionale relativo ai pixel
+                            di ogni quadrato del cubo e una normale che, a secondo della direzione a cui punta, viene
+                            selezionata una delle 6 facce del cubo, andandone a campionare i pixel per poi produrre il
+                            colore. Poichè l'osservatore si troverebbe all'interno della cubemap, abbiamo utilizzato
+                            l'inversa della matrice di proiezione di vista per ottenere la direzione in cui
+                            l'osservatore (la camera) sta guardando. La texture utilizzata nel cubemap per la skybox è
+                            stata presa dalle risorse della documentazione ufficiale di Fall Guys.
+                        </p>
+                        <h4>3.6 Pannello di Controllo</h4>
+                        <p>
+                            Per poter modificare i metadati grafici di gioco inerenti alla luce, alle ombre e alla
+                            distanza di osservazione della telecamera, abbiamo definito un pannello di controllo
+                            all'interno della GUI fornita dall'istanza dat.GUI per poter modificare runtime tali
+                            parametri. Nello specifico, saranno modificabili i seguenti valori nella scena:<br>
+                            <br><i>1. D: </i>distanza dal target prospettico di osservazione della telecamera <br>
+                            <br><i>2. Shadows:</i>abilitazione o disabilitazione delle ombre<br>
+                            <br><i>3. LightX, lightY, LightZ:</i>coordinate (x, y, z) della luce<br>
+                            <br><i>4. LightTargetX, LightTargetY, LightTargetZ:</i> coordinate del target prospettico
+                            della luce<br>
+                            <br><i>5. angleLight:</i> FOV, raggio di osservazione del mondo relativo all'illuminazione
+                            della luce direzionata<br>
+                            <br><i>6. lightNear, LightFar:</i> valori della distanza più vicina e più lontana del piano
+                            di clipping relativo alla sorgente luminosa.<br>
+                            <br><br>
+                            Il pannello di controllo è disponibile solamente internamente alla scena di gioco.
+                        </p>
+                        <h4>3.6 Contesto 2D</h4>
+                        <p>
+                            Per definire il punteggio (score) e le vite del giocatore (life) visualizzato internamente
+                            al canvas, si è utilizzato il context2D del canvas sovrapposto a quello di gioco. Mentre il
+                            canvas di gioco ha lo scopo di visualizzare gli oggetti WebGL, il canvas di testo definisce e
+                            modifica solamente il testo 2D visualizzato a schermo (punteggi e vite correnti, stato di
+                            game over).
+                        </p>
+                        <h4>3.7 FPS</h4>
+                        <p>
+                            All'interno di entrambe le scene WebGL è presente il valore FPS. La sua gestione è definita
+                            all'interno di un animazione secondaria all'interno dello script <i>time.js</i>.
+                            L'indicatore è visibile in alto a sinistra al termine del caricamento della pagina di gioco
+                            e dei file .obj utilizzati.
+                        </p>
+                        <h4>4. Funzionalità WebGL Utilizzate</h4>
+                        <p>
+                            Sono state utilizzate le funzioni WebGL provenienti dalle maggiori librerie spiegate durante
+                            il corso: <br>
+                            <br><i>- m4.js: </i> per la gestione delle operazioni matriciali relative alle proiezioni
+                            prospettiche tridimensionali, operazioni aritmetiche tra matrici, trasformazioni 3D. <br>
+                            <br><i>- webgl-utils.js: </i> per la semplificazione del codice andando ad astrarre
+                            operazioni quali compilazione, linking e creazione dei vari shader program utilizzati. <br>
+                            <br><i>- dat.gui.js: </i> per definire un pannello di controllo responsive adattabile ad
+                            ogni tipo di display. <br>
+                            <br><br>
+                            In aggiunta sono state definite per la gestione e la generazione delle componenti
+                            geometriche per poligoni semplici (<i>primitives.js</i>), definizione delle funzioni utili
+                            per
+                            poter impostare una cubemap per la skybox (<i>skybox.js</i>) e una versione di caricamento
+                            di file
+                            .obj e .mtl simile a load_mesh.js (<i>wavefront.js</i>).
                         </p>
                     </div>
                 </div>

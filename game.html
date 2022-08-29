@@ -158,8 +158,8 @@
             if(isShadow == 1){
                 gl_FragColor = vec4(
                     emissive +
-                    ambient * u_ambientLight + 
-                    effectiveDiffuse * fakeLight * shadowLight + specular * pow(specularLight, shiness), 
+                    ambient * u_ambientLight * shadowLight + 
+                    effectiveDiffuse * fakeLight * shadowLight + specular * pow(specularLight, shiness) * shadowLight, 
                     effectiveOpacity);
                 
             } else {

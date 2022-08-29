@@ -41,7 +41,7 @@ var texture; // Skybox texture
 
 // Fixed light parameters (the light position is managed in the interface.js)
 var ambientLight = [0.1, 0.1, 0.1];
-var lightAmbient = [0.2, 0.2, 0.2];
+var lightAmbient =  lightPosition;
 var lightDiffuse = [0.8, 0.8, 0.8];
 var lightSpecular = [1.0, 1.0, 1.0];
 var lightEmissive = [0, 0, 0]; // no emission
