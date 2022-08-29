@@ -181,7 +181,8 @@
                         <p>
                             Per definire il punteggio (score) e le vite del giocatore (life) visualizzato internamente
                             al canvas, si è utilizzato il context2D del canvas sovrapposto a quello di gioco. Mentre il
-                            canvas di gioco ha lo scopo di visualizzare gli oggetti WebGL, il canvas di testo definisce e
+                            canvas di gioco ha lo scopo di visualizzare gli oggetti WebGL, il canvas di testo definisce
+                            e
                             modifica solamente il testo 2D visualizzato a schermo (punteggi e vite correnti, stato di
                             game over).
                         </p>
@@ -191,6 +192,14 @@
                             all'interno di un animazione secondaria all'interno dello script <i>time.js</i>.
                             L'indicatore è visibile in alto a sinistra al termine del caricamento della pagina di gioco
                             e dei file .obj utilizzati.
+                        </p>
+                        <h4>3.8 Adattamento Mobile</h4>
+                        <p>
+                            Le interfacce sono state gestisce secondo i display di un monitor classico per PC e su un
+                            IPhone XR. Nello specifico, nel caso vi siano le dimensioni della finestra uguali a quelle
+                            dell'IPhone, ponendo l'orientamento in orizzotale, compariranno i pulsanti per il movimento
+                            che risponderanno al tocco sullo schermo. I test inerenti all'adattamento mobile sono stati
+                            effettuati tramite gli strumenti di sviluppo di Google Chrome.
                         </p>
                         <h4>4. Funzionalità WebGL Utilizzate</h4>
                         <p>
