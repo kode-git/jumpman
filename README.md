@@ -18,7 +18,7 @@ La documentazione del progetto è disponibile all'interno della pagina index.htm
 ## Composizione del Progetto
 Questa tabella specifica il contenuto del codice definito dentro la cartella <i>src</i>. La grafica CSS è disponibile esternamente andando nella cartella [style](https://github.com/kode-git/Jumpman/tree/main/style) nella directory corrente.
 
-| Componenti| Description |
+| Componenti| Descrizione |
 |-|-|
 | [assets](https://github.com/kode-git/Jumpman/tree/main/src/assets) | Immagini, video, gif e sfondi utilizzati nel gioco. Non vi sono componenti legate al contesto WebGL. |
 | [models](https://github.com/kode-git/Jumpman/tree/main/src/models) | Contiene le texture, i file MTL e wavefront OBJ delle componenti del gioco caricate nel contesto WebGL. |
