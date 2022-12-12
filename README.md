@@ -12,9 +12,6 @@ Il gioco ha come base logica quello di Fall Guy che, nel 2021, ha riscosso un gr
                             rappresenta il "Jump Man" in grado di muoversi e navigare con i comandi da tastiera
                             (o con le dita per poter adattarlo ai dispositivi mobile).
 
-## Screen di Gioco
-<div align="center"><img width=800px  src="screens/game.png"></div>
-
 ## Documentazione
 La documentazione del progetto è disponibile all'interno della pagina index.html. 
 
